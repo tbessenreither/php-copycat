@@ -1,0 +1,39 @@
+{
+    "name": "tbessenreither/php-copycat",
+    "description": "tool for copying files and directories from bundles to your project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tobias Bessenreither"
+        }
+    ],
+    "require": {
+        "php": "^8.4"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "Tbessenreither\\PhpCopycat\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tbessenreither\\PhpCopycat\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "bin/composer_copycat"
+        ],
+        "post-update-cmd": [
+            "bin/composer_copycat"
+        ]
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "config": {
+        "platform": {
+            "php": "8.4.0"
+        }
+    }
+}
