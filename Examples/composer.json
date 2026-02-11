@@ -1,0 +1,10 @@
+{
+	"scripts": {
+		"post-install-cmd": [
+			"Tbessenreither\\PhpCopycat\\Runner::run"
+		],
+		"post-update-cmd": [
+			"Tbessenreither\\PhpCopycat\\Runner::run"
+		]
+	}
+}
