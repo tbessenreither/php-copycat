@@ -23,10 +23,10 @@
     },
     "scripts": {
         "post-package-install": [
-            "bin/composer_copycat"
+            "Tbessenreither\\PhpCopycat\\Installer::run"
         ],
         "post-package-update": [
-            "bin/composer_copycat"
+            "Tbessenreither\\PhpCopycat\\Installer::run"
         ]
     },
     "minimum-stability": "stable",

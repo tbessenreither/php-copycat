@@ -1,7 +1,0 @@
-#!/usr/bin/env php
-<?php
-declare(strict_types=1);
-
-echo str_repeat(PHP_EOL, 5);
-echo "Copycat script has been executed" . PHP_EOL;
-echo str_repeat(PHP_EOL, 5);
