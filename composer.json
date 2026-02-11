@@ -22,10 +22,10 @@
         }
     },
     "scripts": {
-        "post-install-cmd": [
+        "post-package-install": [
             "bin/composer_copycat"
         ],
-        "post-update-cmd": [
+        "post-package-update": [
             "bin/composer_copycat"
         ]
     },
