@@ -5,6 +5,7 @@ namespace Tbessenreither\PhpCopycat;
 use InvalidArgumentException;
 use RuntimeException;
 use Tbessenreither\PhpCopycat\Dto\PackageInfo;
+use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
 use Throwable;
 
 
@@ -18,29 +19,20 @@ class Copycat
         $this->projectRoot = explode('vendor', __DIR__)[0];
     }
 
-    public function ddevHostCommand(string $file): void
+    /**
+     * Copies a file from the package to the specified target location in the project.
+     * This method does not create directories if they do not exist, so the target directory must already exist before calling this method.
+     */
+    public function copy(CopyTargetEnum $target, string $file): void
     {
         try {
             $file = $this->resolveFile($file);
 
-            echo 'copy ' . $file . ' to ddev host command';
-            $this->copy($file, $this->getDdevHostCommandsDir());
+            echo 'copy ' . $file . ' to ' . $target->value . '';
+            $this->performCopy($file, $this->getTargetDir($target));
 
         } catch (Throwable $e) {
-            $this->logError('ddevHostCommand', $e);
-        }
-    }
-
-    public function ddevWebCommand(string $file): void
-    {
-        try {
-            $file = $this->resolveFile($file);
-
-            echo 'copy ' . $file . ' to ddev web command';
-            $this->copy($file, $this->getDdevWebCommandsDir());
-
-        } catch (Throwable $e) {
-            $this->logError('ddevWebCommand', $e);
+            $this->logError('copy', $e);
         }
     }
 
@@ -77,27 +69,7 @@ class Copycat
         return $resolvedFile;
     }
 
-    private function getDdevRoot(): string
-    {
-        return $this->projectRoot . '.ddev';
-    }
-
-    private function getDdevCommandsDir(): string
-    {
-        return $this->getDdevRoot() . '/commands';
-    }
-
-    private function getDdevHostCommandsDir(): string
-    {
-        return $this->getDdevCommandsDir() . '/host';
-    }
-
-    private function getDdevWebCommandsDir(): string
-    {
-        return $this->getDdevCommandsDir() . '/web';
-    }
-
-    private function copy(string $source, string $destinationDirectory): void
+    private function performCopy(string $source, string $destinationDirectory): void
     {
         if (!file_exists($source) || !is_file($source)) {
             throw new InvalidArgumentException('Source file does not exist: ' . $source);
@@ -112,6 +84,11 @@ class Copycat
         if (!copy($source, $destination)) {
             throw new RuntimeException('Failed to copy file from ' . $source . ' to ' . $destination);
         }
+    }
+
+    private function getTargetDir(CopyTargetEnum $target): string
+    {
+        return $this->projectRoot . $target->value;
     }
 
 }
