@@ -21,14 +21,7 @@
             "Tbessenreither\\PhpCopycat\\Tests\\": "tests/"
         }
     },
-    "scripts": {
-        "post-package-install": [
-            "Tbessenreither\\PhpCopycat\\Installer::run"
-        ],
-        "post-package-update": [
-            "Tbessenreither\\PhpCopycat\\Installer::run"
-        ]
-    },
+    "scripts": {},
     "minimum-stability": "stable",
     "prefer-stable": true,
     "config": {
