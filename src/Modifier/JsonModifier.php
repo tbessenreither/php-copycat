@@ -2,18 +2,13 @@
 
 namespace Tbessenreither\PhpCopycat\Modifier;
 
-use RuntimeException;
-
 
 class JsonModifier
 {
 
-    public static function add(string $file, string $path, mixed $value): void
+    public static function add(string $fileContent, string $path, mixed $value): string
     {
-        $jsonData = json_decode(file_get_contents($file), true);
-        if ($jsonData === null) {
-            throw new RuntimeException('Failed to decode JSON file: ' . $file);
-        }
+        $jsonData = json_decode($fileContent, true);
 
         $keys = explode('.', $path);
         $current = &$jsonData;
@@ -39,7 +34,9 @@ class JsonModifier
             $current = $value;
         }
 
-        file_put_contents($file, json_encode($jsonData, JSON_PRETTY_PRINT));
+        $fileContentModified = json_encode($jsonData, JSON_PRETTY_PRINT);
+
+        return $fileContentModified;
     }
 
 }

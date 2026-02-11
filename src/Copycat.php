@@ -13,11 +13,20 @@ use Throwable;
 class Copycat
 {
     private string $projectRoot;
+    /**
+     * @var array<string, string>
+     */
+    private array $bufferedFiles = [];
 
     public function __construct(
         private PackageInfo $packageInfo,
     ) {
         $this->projectRoot = explode('vendor', __DIR__)[0];
+    }
+
+    public function __destruct()
+    {
+        $this->writeBufferedFiles();
     }
 
     /**
@@ -51,11 +60,13 @@ class Copycat
                 enforceScope: false,
             );
 
-            JsonModifier::add(
-                file: $file,
+            $jsonModified = JsonModifier::add(
+                fileContent: $this->loadFile($file),
                 path: $path,
                 value: $value,
             );
+
+            $this->storeFileModification($file, $jsonModified);
 
         } catch (Throwable $e) {
             $this->logError('jsonAdd', $e);
@@ -70,6 +81,34 @@ class Copycat
     private function getTargetDir(CopyTargetEnum $target): string
     {
         return $this->projectRoot . $target->value;
+    }
+
+    private function loadFile(string $file): string
+    {
+        if (!isset($this->bufferedFiles[$file])) {
+
+            echo "Loading file: $file" . PHP_EOL;
+            $fileData = file_get_contents($file);
+
+            $this->bufferedFiles[$file] = $fileData;
+        }
+
+        return $this->bufferedFiles[$file];
+    }
+
+    private function storeFileModification(string $file, string $content): void
+    {
+        echo "Storing modifications for: $file" . PHP_EOL;
+        $this->bufferedFiles[$file] = $content;
+    }
+
+    private function writeBufferedFiles(): void
+    {
+        foreach ($this->bufferedFiles as $file => $content) {
+            echo "Writing file to disk: $file" . PHP_EOL;
+            file_put_contents($file, $content);
+        }
+        $this->bufferedFiles = [];
     }
 
 }
