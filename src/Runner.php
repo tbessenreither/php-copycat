@@ -13,8 +13,9 @@ class Runner
     public static function run(): void
     {
         echo str_repeat(PHP_EOL, 2);
-        echo "Copycat script has been executed" . PHP_EOL;
+        echo "Running PHP Copycat..." . PHP_EOL;
         self::runCopycat();
+        echo PHP_EOL . "PHP Copycat finished." . PHP_EOL;
         echo str_repeat(PHP_EOL, 2);
     }
 
