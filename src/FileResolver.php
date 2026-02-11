@@ -8,6 +8,7 @@ use Tbessenreither\PhpCopycat\Dto\PackageInfo;
 
 class FileResolver
 {
+    private static array $bufferedFiles = [];
 
     public static function resolve(PackageInfo $packageInfo, string $file, bool $enforceScope = true): string
     {
@@ -35,6 +36,37 @@ class FileResolver
         }
 
         return $resolvedFile;
+    }
+
+    public static function loadFile(string $file): string
+    {
+        if (!isset(self::$bufferedFiles[$file])) {
+
+            echo "Loading file: $file" . PHP_EOL;
+            if (!file_exists($file) || !is_file($file)) {
+                throw new InvalidArgumentException('File not found: ' . $file);
+            }
+            $fileData = file_get_contents($file);
+
+            self::$bufferedFiles[$file] = $fileData;
+        }
+
+        return self::$bufferedFiles[$file];
+    }
+
+    public static function storeFileModification(string $file, string $content): void
+    {
+        echo "Storing modifications for: $file" . PHP_EOL;
+        self::$bufferedFiles[$file] = $content;
+    }
+
+    public static function writeBufferedFilesToDisk(): void
+    {
+        foreach (self::$bufferedFiles as $file => $content) {
+            echo "Writing file to disk: $file" . PHP_EOL;
+            file_put_contents($file, $content);
+        }
+        self::$bufferedFiles = [];
     }
 
 }

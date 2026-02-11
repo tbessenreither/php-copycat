@@ -24,11 +24,6 @@ class Copycat
         $this->projectRoot = explode('vendor', __DIR__)[0];
     }
 
-    public function __destruct()
-    {
-        $this->writeBufferedFiles();
-    }
-
     /**
      * Copies a file from the package to the specified target location in the project.
      * This method does not create directories if they do not exist, so the target directory must already exist before calling this method.
@@ -61,12 +56,12 @@ class Copycat
             );
 
             $jsonModified = JsonModifier::add(
-                fileContent: $this->loadFile($file),
+                fileContent: FileResolver::loadFile($file),
                 path: $path,
                 value: $value,
             );
 
-            $this->storeFileModification($file, $jsonModified);
+            FileResolver::storeFileModification($file, $jsonModified);
 
         } catch (Throwable $e) {
             $this->logError('jsonAdd', $e);
@@ -81,34 +76,6 @@ class Copycat
     private function getTargetDir(CopyTargetEnum $target): string
     {
         return $this->projectRoot . $target->value;
-    }
-
-    private function loadFile(string $file): string
-    {
-        if (!isset($this->bufferedFiles[$file])) {
-
-            echo "Loading file: $file" . PHP_EOL;
-            $fileData = file_get_contents($file);
-
-            $this->bufferedFiles[$file] = $fileData;
-        }
-
-        return $this->bufferedFiles[$file];
-    }
-
-    private function storeFileModification(string $file, string $content): void
-    {
-        echo "Storing modifications for: $file" . PHP_EOL;
-        $this->bufferedFiles[$file] = $content;
-    }
-
-    private function writeBufferedFiles(): void
-    {
-        foreach ($this->bufferedFiles as $file => $content) {
-            echo "Writing file to disk: $file" . PHP_EOL;
-            file_put_contents($file, $content);
-        }
-        $this->bufferedFiles = [];
     }
 
 }

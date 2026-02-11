@@ -15,6 +15,7 @@ class Runner
         echo str_repeat(PHP_EOL, 2);
         echo "Running PHP Copycat..." . PHP_EOL;
         self::runCopycat();
+        FileResolver::writeBufferedFilesToDisk();
         echo PHP_EOL . "PHP Copycat finished." . PHP_EOL;
         echo str_repeat(PHP_EOL, 2);
     }
