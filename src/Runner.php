@@ -51,7 +51,8 @@ class Runner
     private static function getInstalledNamespaces(): array
     {
         $currentDir = __DIR__;
-        $vendorDir = explode('vendor', $currentDir)[0] . 'vendor';
+        $projectRootDir = explode('vendor', $currentDir)[0];
+        $vendorDir = $projectRootDir . 'vendor';
 
         //itterate over all folders in vendor, read the composer.json and extract the namespaces from the autoload section
         $namespaces = [];
@@ -105,6 +106,7 @@ class Runner
                     $path = rtrim($path, '/');
                     $namespaces[] = new PackageInfo(
                         namespace: $namespace,
+                        projectPath: $projectRootDir,
                         autoloadPath: $packageDirectory . '/' . $path,
                         packagePath: $packageDirectory,
                     );

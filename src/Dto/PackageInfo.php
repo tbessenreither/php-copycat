@@ -8,10 +8,12 @@ class PackageInfo
 
     public function __construct(
         private string $namespace,
+        private string $projectPath,
         private string $autoloadPath,
         private string $packagePath,
     ) {
         $this->namespace = rtrim($namespace, '\\');
+        $this->projectPath = rtrim($projectPath, '/\\');
         $this->autoloadPath = rtrim($autoloadPath, '/\\');
         $this->packagePath = rtrim($packagePath, '/\\');
     }
@@ -19,6 +21,11 @@ class PackageInfo
     public function getNamespace(): string
     {
         return $this->namespace;
+    }
+
+    public function getProjectPath(): string
+    {
+        return $this->projectPath;
     }
 
     public function getAutoloadPath(): string

@@ -38,6 +38,29 @@ class FileResolver
         return $resolvedFile;
     }
 
+    public static function resolveInProject(PackageInfo $packageInfo, string $file, bool $createIfNotExists = false): string
+    {
+        $projectPath = $packageInfo->getProjectPath();
+        $filePath = $projectPath . '/' . $file;
+        $resolvedFile = realpath($filePath);
+
+
+        if (!str_starts_with($resolvedFile, $projectPath)) {
+            throw new InvalidArgumentException('Resolved file is outside of project scope: ' . $file);
+        }
+
+        if (str_starts_with($resolvedFile, $projectPath . 'vendor')) {
+            throw new InvalidArgumentException('Resolved file is inside vendor directory, which is not allowed: ' . $file);
+        }
+
+
+
+        if ($resolvedFile === false || !file_exists($resolvedFile) || !is_file($resolvedFile)) {
+            throw new InvalidArgumentException('Project file not found: ' . $file);
+        }
+        return $resolvedFile;
+    }
+
     public static function loadFile(string $file): string
     {
         if (!isset(self::$bufferedFiles[$file])) {

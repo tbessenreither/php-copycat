@@ -1,43 +1,57 @@
+
 # PHP Copycat
 
-A utility package for automating file copying and JSON modifications in PHP projects. Designed for flexible configuration and integration, Copycat enables you to define custom copy and JSON operations via configuration classes.
+
+**PHP Copycat** is a utility package for automating file copying, JSON modifications, .gitignore management, and Symfony bundle registration in PHP projects. It is designed for flexible configuration and easy integration, allowing you to define custom copy, JSON, and project automation operations via configuration classes.
+
+> **Smart Target Validation:**
+> Copycat automatically checks if your project matches the expected system (e.g., Symfony, DDEV) for each operation. If the project does not match, the operation is skipped, preventing unwanted or unsafe changes.
+
+---
 
 
-## Main Use Case
+## Features
 
-**PHP Copycat** is designed to automate the process of copying scripts and updating configuration values in your parent project whenever you install or update packages. By integrating Copycat with Composer scripts, you ensure that essential files and configuration changes are applied automatically, reducing manual steps and keeping your project up-to-date.
+- Copy files to specific targets (e.g., DDEV commands, Symfony, public, etc.)
+- Add or modify JSON values at any path in a target file
+- Add entries to your project's `.gitignore` in a grouped, idempotent way
+- Register Symfony bundles automatically in `config/bundles.php`
+- **Smart system validation:** Only runs operations if your project matches the expected system for the target (e.g., Symfony, DDEV)
+- Secure: prevents copying files from outside your package scope
+- Easily integrate with Composer scripts for automation
 
-### Typical Workflow
-- On `composer install` or `composer update`, Copycat runs and:
-    - Copies required scripts (e.g., shell scripts, command files) to designated locations.
-    - Updates JSON configuration files with new or modified values.
-    - Ensures your project is ready to use new features or settings from dependencies.
+---
 
-- Copy files to specific targets
-- Add or modify JSON values at any path
-- Easily integrate with Composer scripts
+## Typical Workflow
 
-## Security
+On `composer install` or `composer update`, Copycat will:
 
-The `copy` operation is protected: it will not allow copying files from outside your package scope, ensuring safe and predictable automation.
-- Copy files to specific targets
-- Add or modify JSON values at any path
-- Easily integrate with Composer scripts
+- Copy required scripts (e.g., shell scripts, command files) to designated locations
+- Update JSON configuration files with new or modified values
+- Ensure your project is ready to use new features or settings from dependencies
+
+---
 
 ## Installation
 
 Install via Composer:
 
-```
+```sh
 composer require tbessenreither/php-copycat
 ```
+
+---
 
 ## Usage
 
 
-1. **Create a configuration class** implementing the `CopycatConfigInterface`.
+### 1. Create a configuration class
 
-> **Important:** The `CopycatConfig` class must be located in the autoload root of your package (as defined in your `composer.json` autoload section) so it can be discovered and executed automatically.
+Implement the `CopycatConfigInterface` in a class named `CopycatConfig`. This class **must** be located in the autoload root of your package (as defined in your `composer.json` autoload section) so it can be discovered and executed automatically.
+
+**System-aware operations:**
+When you call methods like `copy()`, `jsonAdd()`, or `symfonyBundleAdd()`, Copycat will first check if your project matches the expected system for the target (e.g., only copy Symfony files if your project is a Symfony app). If not, the operation is skipped and your project is left unchanged.
+
 
 Example: [Examples/CopycatConfig.php](Examples/CopycatConfig.php)
 
@@ -50,6 +64,8 @@ use Tbessenreither\PhpCopycat\Copycat;
 use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
 use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
 use Tbessenreither\PhpCopycat\Interface\CopycatConfigInterface;
+// If using symfonyBundleAdd:
+// use Tbessenreither\YourPackage\Bundle\YourBundle;
 
 class CopycatConfig implements CopycatConfigInterface
 {
@@ -83,15 +99,30 @@ class CopycatConfig implements CopycatConfigInterface
             path: 'nested.level1.level2.level3',
             value: 'nested value ' . time(),
         );
+
+        // Add entries to .gitignore (grouped by your package namespace)
+        $copycat->gitIgnoreAdd(
+            entries: [
+                CopyTargetEnum::DDEV_COMMANDS_WEB->value . '/mlc-make',
+                CopyTargetEnum::DDEV_COMMANDS_WEB->value . '/mlc-update',
+            ]
+        );
+
+        // Register a Symfony bundle (if applicable)
+        // $copycat->symfonyBundleAdd(
+        //     bundleClassName: YourBundle::class,
+        // );
     }
 }
 ```
 
-2. **Configure Composer scripts** to run Copycat automatically after install/update.
+---
 
-Add the following to your `composer.json`:
+### 2. Configure Composer scripts
 
-```
+Add the following to your `composer.json` to run Copycat automatically after install/update:
+
+```json
 "scripts": {
     "post-install-cmd": [
         "Tbessenreither\\PhpCopycat\\Runner::run"
@@ -102,13 +133,46 @@ Add the following to your `composer.json`:
 }
 ```
 
+---
+
+
 ## API Reference
 
-- `Copycat::copy(target, file)` — Copy a file to a specified target.
-- `Copycat::jsonAdd(target, path, value)` — Add or modify a value in a JSON file at the given path.
+- `Copycat::copy(target, file)` — Copy a file to a specified target. See [src/Modifier/FileCopy.php](src/Modifier/FileCopy.php)
+- `Copycat::jsonAdd(target, path, value)` — Add or modify a value in a JSON file at the given path. See [src/Modifier/JsonModifier.php](src/Modifier/JsonModifier.php)
+- `Copycat::gitIgnoreAdd(entries)` — Add one or more entries to the project’s `.gitignore` file, grouped by your package namespace. See [src/Modifier/GitignoreModifier.php](src/Modifier/GitignoreModifier.php)
+- `Copycat::symfonyBundleAdd(bundleClassName)` — Register a Symfony bundle in `config/bundles.php` (if the project is a Symfony app). See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
+
+---
 
 ## Example
-See [Examples/CopycatConfig.php](Examples/CopycatConfig.php) for a full configuration example.
+
+
+See [Examples/CopycatConfig.php](Examples/CopycatConfig.php) for a full configuration example, including .gitignore and Symfony bundle registration.
+
+---
+
+## Project Structure
+
+- `src/` — Main source code
+    - `Copycat.php` — Main entry point
+    - `Runner.php` — Composer script runner
+    - `Modifier/` — File and JSON modification logic
+    - `Enum/` — Target enums for copy and JSON operations
+    - `Dto/` — Data transfer objects
+    - `Interface/` — Configuration interface
+- `Examples/` — Example configuration and usage
+
+---
+
+
+## Security & Safety
+
+- The `copy` operation is protected: it will not allow copying files from outside your package scope, ensuring safe and predictable automation.
+- **System validation:** Operations are only performed if your project matches the expected system for the target (e.g., Symfony, DDEV). This prevents accidental or unsafe changes in the wrong type of project.
+
+---
 
 ## License
+
 MIT

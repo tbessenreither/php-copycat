@@ -2,6 +2,7 @@
 
 namespace Tbessenreither\MultiLevelCache;
 
+use Tbessenreither\MultiLevelCache\Bundle\MultiLevelCacheBundle;
 use Tbessenreither\PhpCopycat\Copycat;
 use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
 use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
@@ -40,6 +41,17 @@ class CopycatConfig implements CopycatConfigInterface
             target: JsonTargetEnum::TEST,
             path: 'nested.level1.level2.level3',
             value: 'nested value ' . time(),
+        );
+
+        $copycat->gitIgnoreAdd(
+            entries: [
+                CopyTargetEnum::DDEV_COMMANDS_WEB->value . '/mlc-make',
+                CopyTargetEnum::DDEV_COMMANDS_WEB->value . '/mlc-update',
+            ]
+        );
+
+        $copycat->symfonyBundleAdd(
+            bundleClassName: MultiLevelCacheBundle::class,
         );
     }
 

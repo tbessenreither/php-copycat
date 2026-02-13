@@ -2,11 +2,15 @@
 
 namespace Tbessenreither\PhpCopycat;
 
+use RuntimeException;
 use Tbessenreither\PhpCopycat\Dto\PackageInfo;
 use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
 use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
+use Tbessenreither\PhpCopycat\Enum\KnownSystemsEnum;
 use Tbessenreither\PhpCopycat\Modifier\FileCopy;
+use Tbessenreither\PhpCopycat\Modifier\GitignoreModifier;
 use Tbessenreither\PhpCopycat\Modifier\JsonModifier;
+use Tbessenreither\PhpCopycat\Modifier\SymfonyModifier;
 use Throwable;
 
 
@@ -31,6 +35,8 @@ class Copycat
     public function copy(CopyTargetEnum $target, string $file): void
     {
         try {
+            SystemValidator::validateSystem($this->packageInfo, $target->getSystem());
+
             $file = FileResolver::resolve(
                 packageInfo: $this->packageInfo,
                 file: $file,
@@ -49,10 +55,11 @@ class Copycat
     public function jsonAdd(JsonTargetEnum $target, string $path, mixed $value): void
     {
         try {
-            $file = FileResolver::resolve(
+            SystemValidator::validateSystem($this->packageInfo, $target->getSystem());
+
+            $file = FileResolver::resolveInProject(
                 packageInfo: $this->packageInfo,
                 file: $target->value,
-                enforceScope: false,
             );
 
             $jsonModified = JsonModifier::add(
@@ -65,6 +72,58 @@ class Copycat
 
         } catch (Throwable $e) {
             $this->logError('jsonAdd', $e);
+        }
+    }
+
+    /**
+     * Adds one or more entries to the .gitignore file in project root. If the .gitignore file does not exist, it will be created.
+     * @param string|string[] $entry
+     * @return void
+     */
+    public function gitIgnoreAdd(string|array $entries): void
+    {
+        if (!is_array($entries)) {
+            $entries = [$entries];
+        }
+        try {
+            $file = FileResolver::resolveInProject(
+                packageInfo: $this->packageInfo,
+                file: '.gitignore',
+                createIfNotExists: true,
+            );
+
+            $modifiedContent = GitignoreModifier::add(
+                fileContent: FileResolver::loadFile($file),
+                entries: $entries,
+                groupName: $this->packageInfo->getNamespace(),
+            );
+
+            FileResolver::storeFileModification($file, $modifiedContent);
+
+        } catch (Throwable $e) {
+            $this->logError('gitIgnoreAdd', $e);
+        }
+    }
+
+    public function symfonyBundleAdd(string $bundleClassName): void
+    {
+        try {
+            SystemValidator::validateSystem($this->packageInfo, KnownSystemsEnum::SYMFONY);
+
+            $file = FileResolver::resolveInProject(
+                packageInfo: $this->packageInfo,
+                file: 'config/bundles.php',
+            );
+
+            $modifiedContent = SymfonyModifier::addToBundle(
+                fileContent: FileResolver::loadFile($file),
+                bundleClassName: $bundleClassName,
+            );
+
+            FileResolver::storeFileModification($file, $modifiedContent);
+
+        } catch (Throwable $e) {
+            $this->logError('symfonyBundleAdd', $e);
         }
     }
 

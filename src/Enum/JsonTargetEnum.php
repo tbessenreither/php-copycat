@@ -7,4 +7,9 @@ enum JsonTargetEnum: string
 {
     case TEST = 'src/test.json';
 
+    public function getSystem(): ?KnownSystemsEnum
+    {
+        return null;
+    }
+
 }
