@@ -12,6 +12,8 @@
 
 ## Features
 
+### Current features
+
 - Copy files to specific targets (e.g., DDEV commands, Symfony, public, etc.)
 - Add or modify JSON values at any path in a target file
 - Add entries to your project's `.gitignore` in a grouped, idempotent way
@@ -19,6 +21,15 @@
 - **Smart system validation:** Only runs operations if your project matches the expected system for the target (e.g., Symfony, DDEV)
 - Secure: prevents copying files from outside your package scope
 - Easily integrate with Composer scripts for automation
+
+### Planned Features
+
+PHP Copycat is actively developed. Planned features include:
+- Support for modifying yaml configuration files
+- Supporting Laravel targets and system
+- Adding / Modifying the .env.local file (and only this file).
+- Echo of messages after execution (e.g., "Package [Packagename]: To use this package, do X, Y, Z...")
+- do not overwrite flag for copy operations (e.g., only copy if file does not exist). Usefull for copying boilerplate files that the user may have modified after installation.
 
 ---
 
