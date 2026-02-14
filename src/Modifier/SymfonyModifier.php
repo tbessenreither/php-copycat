@@ -95,7 +95,6 @@ class SymfonyModifier
         $serviceConfigYaml = yaml_emit($serviceConfig, YAML_UTF8_ENCODING, YAML_LN_BREAK);
         $serviceConfigYaml = trim($serviceConfigYaml);
         $addedLinesYaml = explode(PHP_EOL, $serviceConfigYaml);
-        var_dump($addedLinesYaml);
         // remove the first line which is "---" and the last line which is "..."
         array_shift($addedLinesYaml);
         array_pop($addedLinesYaml);
