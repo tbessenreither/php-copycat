@@ -65,7 +65,7 @@ class FileResolver
     {
         if (!isset(self::$bufferedFiles[$file])) {
 
-            echo "Loading file: $file" . PHP_EOL;
+            echo "        Loading file: $file" . PHP_EOL;
             if (!file_exists($file) || !is_file($file)) {
                 throw new InvalidArgumentException('File not found: ' . $file);
             }
@@ -79,14 +79,15 @@ class FileResolver
 
     public static function storeFileModification(string $file, string $content): void
     {
-        echo "Storing modifications for: $file" . PHP_EOL;
+        echo "        Storing modifications for: $file" . PHP_EOL;
         self::$bufferedFiles[$file] = $content;
     }
 
     public static function writeBufferedFilesToDisk(): void
     {
+        echo PHP_EOL . "Writing buffered file modifications to disk..." . PHP_EOL;
         foreach (self::$bufferedFiles as $file => $content) {
-            echo "Writing file to disk: $file" . PHP_EOL;
+            echo "    - Writing file to disk: $file" . PHP_EOL;
             file_put_contents($file, $content);
         }
         self::$bufferedFiles = [];

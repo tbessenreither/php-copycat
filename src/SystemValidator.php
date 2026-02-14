@@ -33,6 +33,8 @@ class SystemValidator
             return file_exists($packageInfo->getProjectPath() . $indicatorFile) && is_dir($packageInfo->getProjectPath() . $indicatorFile);
         } elseif ($system === KnownSystemsEnum::SYMFONY) {
             return file_exists($packageInfo->getProjectPath() . $indicatorFile) && is_file($packageInfo->getProjectPath() . $indicatorFile);
+        } elseif ($system === KnownSystemsEnum::GIT) {
+            return file_exists($packageInfo->getProjectPath() . $indicatorFile) && is_dir($packageInfo->getProjectPath() . $indicatorFile);
         } else {
             throw new RuntimeException('Unknown system: ' . $system->value);
         }

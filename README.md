@@ -91,6 +91,7 @@ class CopycatConfig implements CopycatConfigInterface
         $copycat->copy(
             target: CopyTargetEnum::DDEV_COMMANDS_WEB,
             file: 'ddev/commands/web/test-command.sh',
+            overwrite: false,
         );
 
 
@@ -150,14 +151,48 @@ Add the following to your `composer.json` to run Copycat automatically after ins
 
 ---
 
+Whenever you run `composer install` or `composer update`, Copycat will execute your `CopycatConfig::run()` methods, performing all the defined operations in a safe and system-aware manner.
+
+Example output on execution:
+
+```text
+Running PHP Copycat...
+Running copycat for namespace Tbessenreither\FeatureFlagServiceClient
+    - Adding value to src/test.json at path nested.level1.level2.level3
+        Loading file: /var/www/html/src/test.json
+        Storing modifications for: /var/www/html/src/test.json
+Running copycat for namespace Tbessenreither\MultiLevelCache
+    - copy bin/mlc-make to .ddev/commands/web
+    - copy bin/mlc-update to .ddev/commands/web
+        copy Error - Destination file already exists: /var/www/html/.ddev/commands/web/mlc-update
+    - Adding 2 entries to .gitignore:
+        Loading file: /var/www/html/.gitignore
+        Added 0 entries to .gitignore, skipped 2 entries that already exist.
+        Storing modifications for: /var/www/html/.gitignore
+    - Adding Tbessenreither\MultiLevelCache\DataCollector\MultiLevelCacheDataCollector to symfony bundles.php.
+        Loading file: /var/www/html/config/bundles.php
+        symfonyBundleAdd Error - Bundle class Tbessenreither\MultiLevelCache\DataCollector\MultiLevelCacheDataCollector does not implement the Symfony BundleInterface. This will not be added to bundles.php
+    - Adding service Tbessenreither\PhpCopycat\Copycat to symfony services.yaml.
+        Loading file: /var/www/html/config/services.yaml
+        symfonyAddServiceToYaml Error - Service Tbessenreither\PhpCopycat\Copycat is already registered in services.yaml, skipping.
+
+Writing buffered file modifications to disk...
+    - Writing file to disk: /var/www/html/src/test.json
+    - Writing file to disk: /var/www/html/.gitignore
+    - Writing file to disk: /var/www/html/config/bundles.php
+    - Writing file to disk: /var/www/html/config/services.yaml
+
+PHP Copycat finished.
+```
+
 
 ## API Reference
 
-- `Copycat::copy(target, file)` — Copy a file to a specified target. See [src/Modifier/FileCopy.php](src/Modifier/FileCopy.php)
-- `Copycat::jsonAdd(target, path, value)` — Add or modify a value in a JSON file at the given path. See [src/Modifier/JsonModifier.php](src/Modifier/JsonModifier.php)
-- `Copycat::gitIgnoreAdd(entries)` — Add one or more entries to the project’s `.gitignore` file, grouped by your package namespace. See [src/Modifier/GitignoreModifier.php](src/Modifier/GitignoreModifier.php)
-- `Copycat::symfonyBundleAdd(bundleClassName)` — Register a Symfony bundle in `config/bundles.php` (if the project is a Symfony app). See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
-- `Copycat::symfonyAddServiceToYaml(serviceClass, arguments)` — Register a service in Symfony's `services.yaml` with optional constructor arguments. See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
+- `Copycat::copy(CopyTargetEnum target, string file, bool overwrite=true)` — Copy a file to a specified target. See [src/Modifier/FileCopy.php](src/Modifier/FileCopy.php)
+- `Copycat::jsonAdd(JsonTargetEnum target, string path, mixed value)` — Add or modify a value in a JSON file at the given path. See [src/Modifier/JsonModifier.php](src/Modifier/JsonModifier.php)
+- `Copycat::gitIgnoreAdd(string[] entries)` — Add one or more entries to the project’s `.gitignore` file, grouped by your package namespace. See [src/Modifier/GitignoreModifier.php](src/Modifier/GitignoreModifier.php)
+- `Copycat::symfonyBundleAdd(class-string bundleClassName)` — Register a Symfony bundle in `config/bundles.php` (if the project is a Symfony app). See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
+- `Copycat::symfonyAddServiceToYaml(class-string serviceClass, array arguments)` — Register a service in Symfony's `services.yaml` with optional constructor arguments. See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
 
 ---
 

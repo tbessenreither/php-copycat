@@ -15,6 +15,7 @@ class GitignoreModifier
      */
     public static function add(string $fileContent, array|string $entries, string $groupName): string
     {
+        $stats = ['added' => 0, 'skipped' => 0];
         if (!is_array($entries)) {
             $entries = [$entries];
         }
@@ -49,6 +50,9 @@ class GitignoreModifier
         foreach ($entries as $entry) {
             if (!in_array($entry, $groupLines, true)) {
                 $groupLines[] = $entry;
+                $stats['added']++;
+            } else {
+                $stats['skipped']++;
             }
         }
 
@@ -61,6 +65,8 @@ class GitignoreModifier
 
         // Ensure the file ends with a newline
         $lines[] = '';
+
+        echo "        Added " . $stats['added'] . " entries to .gitignore, skipped " . $stats['skipped'] . " entries that already existed." . PHP_EOL;
 
         return implode(PHP_EOL, $lines);
     }

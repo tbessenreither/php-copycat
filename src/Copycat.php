@@ -32,9 +32,10 @@ class Copycat
      * Copies a file from the package to the specified target location in the project.
      * This method does not create directories if they do not exist, so the target directory must already exist before calling this method.
      */
-    public function copy(CopyTargetEnum $target, string $file): void
+    public function copy(CopyTargetEnum $target, string $file, bool $overwrite = true): void
     {
         try {
+            echo '    - copy ' . $file . ' to ' . $target->value . '' . PHP_EOL;
             SystemValidator::validateSystem($this->packageInfo, $target->getSystem());
 
             $file = FileResolver::resolve(
@@ -45,6 +46,7 @@ class Copycat
             FileCopy::copy(
                 source: $file,
                 destinationDirectory: $this->getTargetDir($target),
+                overwrite: $overwrite,
             );
 
         } catch (Throwable $e) {
@@ -55,6 +57,7 @@ class Copycat
     public function jsonAdd(JsonTargetEnum $target, string $path, mixed $value): void
     {
         try {
+            echo "    - Adding value to " . $target->value . " at path " . $path . PHP_EOL;
             SystemValidator::validateSystem($this->packageInfo, $target->getSystem());
 
             $file = FileResolver::resolveInProject(
@@ -86,6 +89,8 @@ class Copycat
             $entries = [$entries];
         }
         try {
+            echo "    - Adding " . count($entries) . " entries to .gitignore:" . PHP_EOL;
+            SystemValidator::validateSystem($this->packageInfo, KnownSystemsEnum::GIT);
             $file = FileResolver::resolveInProject(
                 packageInfo: $this->packageInfo,
                 file: '.gitignore',
@@ -108,6 +113,7 @@ class Copycat
     public function symfonyBundleAdd(string $bundleClassName): void
     {
         try {
+            echo "    - Adding $bundleClassName to symfony bundles.php." . PHP_EOL;
             SystemValidator::validateSystem($this->packageInfo, KnownSystemsEnum::SYMFONY);
 
             $file = FileResolver::resolveInProject(
@@ -130,6 +136,7 @@ class Copycat
     public function symfonyAddServiceToYaml(string $serviceClass, array $arguments = []): void
     {
         try {
+            echo "    - Adding service $serviceClass to symfony services.yaml." . PHP_EOL;
             SystemValidator::validateSystem($this->packageInfo, KnownSystemsEnum::SYMFONY);
 
             $file = FileResolver::resolveInProject(
@@ -152,7 +159,7 @@ class Copycat
 
     private function logError(string $method, Throwable $e): void
     {
-        echo $method . " Error - " . $e->getMessage() . PHP_EOL;
+        echo '        ' . $method . " Error - " . $e->getMessage() . PHP_EOL;
     }
 
     private function getTargetDir(CopyTargetEnum $target): string

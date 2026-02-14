@@ -51,7 +51,6 @@ class SymfonyModifier
             }
         }
         // Insert the new bundle line at the correct position
-        echo "Inserting bundle $bundleClassName at line $insertIndex in bundles.php." . PHP_EOL;
         array_splice($lines, $insertIndex, 0, $bundleLine);
 
         return implode(PHP_EOL, $lines);
@@ -71,9 +70,7 @@ class SymfonyModifier
             $line = $yamlLines[$i];
 
             if (mb_strpos(trim($line), $serviceClass . ':') === 0) {
-                echo "Service $serviceClass is already registered in services.yaml, skipping." . PHP_EOL;
-
-                return $fileContent;
+                throw new RuntimeException('Service ' . $serviceClass . ' is already registered in services.yaml, skipping.');
             }
 
             if (mb_strpos($yamlLines[$i], '    ') === 0 || empty(trim($yamlLines[$i]))) { // check if the line is indented with 2 spaces or is empty, which means we're still in the services section
@@ -107,7 +104,6 @@ class SymfonyModifier
         $serviceConfigYaml = YamlModifier::INDENTATION . str_replace(PHP_EOL, PHP_EOL . YamlModifier::INDENTATION, $serviceConfigYaml);
 
         // Insert the new service config at the correct position
-        echo "Adding service $serviceClass to services.yaml." . PHP_EOL;
         array_splice($yamlLines, $endOfServicesLineNumber + 1, 0, $serviceConfigYaml);
 
         $yamlString = implode(PHP_EOL, $yamlLines);
