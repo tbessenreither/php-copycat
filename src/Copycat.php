@@ -127,6 +127,29 @@ class Copycat
         }
     }
 
+    public function symfonyAddServiceToYaml(string $serviceClass, array $arguments = []): void
+    {
+        try {
+            SystemValidator::validateSystem($this->packageInfo, KnownSystemsEnum::SYMFONY);
+
+            $file = FileResolver::resolveInProject(
+                packageInfo: $this->packageInfo,
+                file: 'config/services.yaml',
+            );
+
+            $modifiedContent = SymfonyModifier::addServiceToYaml(
+                fileContent: FileResolver::loadFile($file),
+                serviceClass: $serviceClass,
+                arguments: $arguments,
+            );
+
+            FileResolver::storeFileModification($file, $modifiedContent);
+
+        } catch (Throwable $e) {
+            $this->logError('symfonyAddServiceToYaml', $e);
+        }
+    }
+
     private function logError(string $method, Throwable $e): void
     {
         echo $method . " Error - " . $e->getMessage() . PHP_EOL;

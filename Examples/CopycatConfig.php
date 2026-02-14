@@ -50,8 +50,17 @@ class CopycatConfig implements CopycatConfigInterface
             ]
         );
 
+        /* * Symfony specific configuration
         $copycat->symfonyBundleAdd(
             bundleClassName: MultiLevelCacheBundle::class,
+        );
+        /**/
+
+        $copycat->symfonyAddServiceToYaml(
+            Copycat::class,
+            arguments: [
+                '$packageInfo' => 'Tbessenreither\MultiLevelCache\Dto\PackageInfo',
+            ],
         );
     }
 

@@ -65,28 +65,36 @@ When you call methods like `copy()`, `jsonAdd()`, or `symfonyBundleAdd()`, Copyc
 
 
 Example: [Examples/CopycatConfig.php](Examples/CopycatConfig.php)
+This example demonstrates a full-featured Copycat configuration class. It shows how to:
+- Copy files to a DDEV target
+- Add and modify JSON values in a project file
+- Add entries to .gitignore in a grouped way
+- Register a Symfony bundle
+- Register a service in Symfony's services.yaml
 
 ```php
 <?php declare(strict_types=1);
 
-namespace YourNamespace;
+namespace Tbessenreither\MultiLevelCache;
 
+use Tbessenreither\MultiLevelCache\Bundle\MultiLevelCacheBundle;
 use Tbessenreither\PhpCopycat\Copycat;
 use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
 use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
 use Tbessenreither\PhpCopycat\Interface\CopycatConfigInterface;
-// If using symfonyBundleAdd:
-// use Tbessenreither\YourPackage\Bundle\YourBundle;
 
 class CopycatConfig implements CopycatConfigInterface
 {
     public static function run(Copycat $copycat): void
     {
+        /* DDEV specific configuration */
         $copycat->copy(
             target: CopyTargetEnum::DDEV_COMMANDS_WEB,
             file: 'ddev/commands/web/test-command.sh',
         );
 
+
+        /* General JSON modifications */
         $copycat->jsonAdd(
             target: JsonTargetEnum::TEST,
             path: 'items',
@@ -100,18 +108,7 @@ class CopycatConfig implements CopycatConfigInterface
                 'setting2' => 'value2 ' . time(),
             ],
         );
-        $copycat->jsonAdd(
-            target: JsonTargetEnum::TEST,
-            path: 'config.setting3',
-            value: 'value3 ' . time(),
-        );
-        $copycat->jsonAdd(
-            target: JsonTargetEnum::TEST,
-            path: 'nested.level1.level2.level3',
-            value: 'nested value ' . time(),
-        );
 
-        // Add entries to .gitignore (grouped by your package namespace)
         $copycat->gitIgnoreAdd(
             entries: [
                 CopyTargetEnum::DDEV_COMMANDS_WEB->value . '/mlc-make',
@@ -119,10 +116,17 @@ class CopycatConfig implements CopycatConfigInterface
             ]
         );
 
-        // Register a Symfony bundle (if applicable)
-        // $copycat->symfonyBundleAdd(
-        //     bundleClassName: YourBundle::class,
-        // );
+        /* Symfony specific configuration */
+        $copycat->symfonyBundleAdd(
+            bundleClassName: MultiLevelCacheBundle::class,
+        );
+
+        $copycat->symfonyAddServiceToYaml(
+            Copycat::class,
+            arguments: [
+                '$packageInfo' => 'Tbessenreither\MultiLevelCache\Dto\PackageInfo',
+            ],
+        );
     }
 }
 ```
@@ -153,6 +157,7 @@ Add the following to your `composer.json` to run Copycat automatically after ins
 - `Copycat::jsonAdd(target, path, value)` — Add or modify a value in a JSON file at the given path. See [src/Modifier/JsonModifier.php](src/Modifier/JsonModifier.php)
 - `Copycat::gitIgnoreAdd(entries)` — Add one or more entries to the project’s `.gitignore` file, grouped by your package namespace. See [src/Modifier/GitignoreModifier.php](src/Modifier/GitignoreModifier.php)
 - `Copycat::symfonyBundleAdd(bundleClassName)` — Register a Symfony bundle in `config/bundles.php` (if the project is a Symfony app). See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
+- `Copycat::symfonyAddServiceToYaml(serviceClass, arguments)` — Register a service in Symfony's `services.yaml` with optional constructor arguments. See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
 
 ---
 

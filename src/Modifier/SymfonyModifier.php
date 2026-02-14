@@ -57,6 +57,65 @@ class SymfonyModifier
         return implode(PHP_EOL, $lines);
     }
 
+    public static function addServiceToYaml(string $fileContent, string $serviceClass, array $arguments = []): string
+    {
+        $yamlLines = explode(PHP_EOL, $fileContent);
+
+        $servicesLineNumber = array_search('services:', $yamlLines, true) + 1;
+        if ($servicesLineNumber === false) {
+            $servicesLineNumber = count($yamlLines);
+            $yamlLines[] = 'services:';
+        }
+        $endOfServicesLineNumber = $servicesLineNumber + 1;
+        for ($i = $endOfServicesLineNumber; $i < count($yamlLines); $i++) {
+            $line = $yamlLines[$i];
+
+            if (mb_strpos(trim($line), $serviceClass . ':') === 0) {
+                echo "Service $serviceClass is already registered in services.yaml, skipping." . PHP_EOL;
+
+                return $fileContent;
+            }
+
+            if (mb_strpos($yamlLines[$i], '    ') === 0 || empty(trim($yamlLines[$i]))) { // check if the line is indented with 2 spaces or is empty, which means we're still in the services section
+                $endOfServicesLineNumber = $i;
+            } else { // we're no longer in the services section due to indentation
+                break;
+            }
+        }
+
+        $serviceConfig = [];
+        $serviceConfig[$serviceClass] = [
+            'class' => $serviceClass,
+        ];
+
+        if (!empty($arguments)) {
+            $serviceConfig[$serviceClass]['arguments'] = $arguments;
+        }
+
+        $serviceConfigYaml = yaml_emit($serviceConfig, YAML_UTF8_ENCODING, YAML_LN_BREAK);
+        $serviceConfigYaml = trim($serviceConfigYaml);
+        $addedLinesYaml = explode(PHP_EOL, $serviceConfigYaml);
+        var_dump($addedLinesYaml);
+        // remove the first line which is "---" and the last line which is "..."
+        array_shift($addedLinesYaml);
+        array_pop($addedLinesYaml);
+        // add an empty line before and after the added lines for better readability
+        array_unshift($addedLinesYaml, '');
+        array_push($addedLinesYaml, '');
+        $serviceConfigYaml = implode(PHP_EOL, $addedLinesYaml);
+        // change to default indentation instead of 2
+        $serviceConfigYaml = str_replace('  ', YamlModifier::INDENTATION, $serviceConfigYaml);
+        $serviceConfigYaml = YamlModifier::INDENTATION . str_replace(PHP_EOL, PHP_EOL . YamlModifier::INDENTATION, $serviceConfigYaml);
+
+        // Insert the new service config at the correct position
+        echo "Adding service $serviceClass to services.yaml." . PHP_EOL;
+        array_splice($yamlLines, $endOfServicesLineNumber + 1, 0, $serviceConfigYaml);
+
+        $yamlString = implode(PHP_EOL, $yamlLines);
+
+        return $yamlString;
+    }
+
     private static function checkIfBundleClassIsValid(string $bundleClassName): void
     {
         if (!class_exists($bundleClassName)) {
