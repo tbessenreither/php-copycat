@@ -21,15 +21,15 @@
 - **Smart system validation:** Only runs operations if your project matches the expected system for the target (e.g., Symfony, DDEV)
 - Secure: prevents copying files from outside your package scope
 - Easily integrate with Composer scripts for automation
+- Partial reversal of operations on package removal (removing copied files, removing bundle, removing .gitignore section)
 
 ### Planned Features
 
 PHP Copycat is actively developed. Planned features include:
+- Support for reversing all operations on package removal (e.g., removing copied files, removing bundle, removing services, removing .gitignore section).
 - Support for modifying yaml configuration files
-- Supporting Laravel targets and system
 - Adding / Modifying the .env.local file (and only this file).
 - Echo of messages after execution (e.g., "Package [Packagename]: To use this package, do X, Y, Z...")
-- do not overwrite flag for copy operations (e.g., only copy if file does not exist). Usefull for copying boilerplate files that the user may have modified after installation.
 
 ---
 
@@ -77,21 +77,21 @@ This example demonstrates a full-featured Copycat configuration class. It shows 
 
 namespace Tbessenreither\MultiLevelCache;
 
-use Tbessenreither\MultiLevelCache\Bundle\MultiLevelCacheBundle;
-use Tbessenreither\PhpCopycat\Copycat;
 use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
 use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
 use Tbessenreither\PhpCopycat\Interface\CopycatConfigInterface;
+use Tbessenreither\PhpCopycat\Interface\CopycatInterface;
 
 class CopycatConfig implements CopycatConfigInterface
 {
-    public static function run(Copycat $copycat): void
+    public static function run(CopycatInterface $copycat): void
     {
         /* DDEV specific configuration */
         $copycat->copy(
             target: CopyTargetEnum::DDEV_COMMANDS_WEB,
             file: 'ddev/commands/web/test-command.sh',
             overwrite: false,
+            gitIgnore: true, # This will add the copied file to .gitignore, preventing it from being committed to version control (useful for files that are not meant to be modified by the user like commands or binaries)
         );
 
 
@@ -123,7 +123,7 @@ class CopycatConfig implements CopycatConfigInterface
         );
 
         $copycat->symfonyAddServiceToYaml(
-            Copycat::class,
+            serviceClass: CopycatConfig::class,
             arguments: [
                 '$packageInfo' => 'Tbessenreither\MultiLevelCache\Dto\PackageInfo',
             ],
@@ -144,6 +144,9 @@ Add the following to your `composer.json` to run Copycat automatically after ins
         "Tbessenreither\\PhpCopycat\\Runner::run"
     ],
     "post-update-cmd": [
+        "Tbessenreither\\PhpCopycat\\Runner::run"
+    ],
+    "pre-package-uninstall": [
         "Tbessenreither\\PhpCopycat\\Runner::run"
     ]
 }
@@ -185,10 +188,28 @@ Writing buffered file modifications to disk...
 PHP Copycat finished.
 ```
 
+Copycat now supports partial reversal of operations on package removal.
+```text
+Running PHP Copycat...
+Reverting copycat for namespace Tbessenreither\FeatureFlagServiceClient
+    - Removing src/CopycatConfig.php from public
+    - Removing .gitignore entries:
+        Loading file: /var/www/html/.gitignore
+        Storing modifications for: /var/www/html/.gitignore
+    - Removing Tbessenreither\FeatureFlagServiceClient\Bundle\FeatureFlagClientBundle from symfony bundles.php.
+        Loading file: /var/www/html/config/bundles.php
+        Storing modifications for: /var/www/html/config/bundles.php
+
+Writing buffered file modifications to disk...
+    - Writing file to disk: /var/www/html/.gitignore
+    - Writing file to disk: /var/www/html/config/bundles.php
+
+PHP Copycat finished.
+```
 
 ## API Reference
 
-- `Copycat::copy(CopyTargetEnum target, string file, bool overwrite=true)` — Copy a file to a specified target. See [src/Modifier/FileCopy.php](src/Modifier/FileCopy.php)
+- `Copycat::copy(CopyTargetEnum target, string file, bool overwrite=true, bool gitIgnore=false)` — Copy a file to a specified target. See [src/Modifier/FileCopy.php](src/Modifier/FileCopy.php)
 - `Copycat::jsonAdd(JsonTargetEnum target, string path, mixed value)` — Add or modify a value in a JSON file at the given path. See [src/Modifier/JsonModifier.php](src/Modifier/JsonModifier.php)
 - `Copycat::gitIgnoreAdd(string[] entries)` — Add one or more entries to the project’s `.gitignore` file, grouped by your package namespace. See [src/Modifier/GitignoreModifier.php](src/Modifier/GitignoreModifier.php)
 - `Copycat::symfonyBundleAdd(class-string bundleClassName)` — Register a Symfony bundle in `config/bundles.php` (if the project is a Symfony app). See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)

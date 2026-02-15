@@ -1,0 +1,31 @@
+<?php declare(strict_types=1);
+
+namespace Tbessenreither\PhpCopycat\Interface;
+
+use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
+use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
+use Throwable;
+
+
+interface CopycatInterface
+{
+
+    /**
+     * Copies a file from the package to the specified target location in the project.
+     * This method does not create directories if they do not exist, so the target directory must already exist before calling this method.
+     */
+    public function copy(CopyTargetEnum $target, string $file, bool $overwrite = true, bool $gitIgnore = false): void;
+
+    public function jsonAdd(JsonTargetEnum $target, string $path, mixed $value): void;
+
+    /**
+     * Adds one or more entries to the .gitignore file in project root. If the .gitignore file does not exist, it will be created.
+     * @param string|string[] $entry
+     */
+    public function gitIgnoreAdd(string|array $entries): void;
+
+    public function symfonyBundleAdd(string $bundleClassName): void;
+
+    public function symfonyAddServiceToYaml(string $serviceClass, array $arguments = []): void;
+
+}

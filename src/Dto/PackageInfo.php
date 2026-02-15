@@ -11,6 +11,7 @@ class PackageInfo
         private string $projectPath,
         private string $autoloadPath,
         private string $packagePath,
+        private string $composerName,
     ) {
         $this->namespace = rtrim($namespace, '\\');
         $this->projectPath = rtrim($projectPath, '/\\');
@@ -36,6 +37,11 @@ class PackageInfo
     public function getPackagePath(): string
     {
         return $this->packagePath;
+    }
+
+    public function getComposerName(): string
+    {
+        return $this->composerName;
     }
 
 }

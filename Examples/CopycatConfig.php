@@ -2,21 +2,21 @@
 
 namespace Tbessenreither\MultiLevelCache;
 
-use Tbessenreither\MultiLevelCache\Bundle\MultiLevelCacheBundle;
-use Tbessenreither\PhpCopycat\Copycat;
 use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
 use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
 use Tbessenreither\PhpCopycat\Interface\CopycatConfigInterface;
+use Tbessenreither\PhpCopycat\Interface\CopycatInterface;
 
 
 class CopycatConfig implements CopycatConfigInterface
 {
 
-    public static function run(Copycat $copycat): void
+    public static function run(CopycatInterface $copycat): void
     {
         $copycat->copy(
             target: CopyTargetEnum::DDEV_COMMANDS_WEB,
             file: 'ddev/commands/web/test-command.sh',
+            gitIgnore: true,
         );
 
         $copycat->jsonAdd(
@@ -57,7 +57,7 @@ class CopycatConfig implements CopycatConfigInterface
         /**/
 
         $copycat->symfonyAddServiceToYaml(
-            Copycat::class,
+            serviceClass: CopycatConfig::class,
             arguments: [
                 '$packageInfo' => 'Tbessenreither\MultiLevelCache\Dto\PackageInfo',
             ],

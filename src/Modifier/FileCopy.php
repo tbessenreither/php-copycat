@@ -30,4 +30,21 @@ class FileCopy
         }
     }
 
+    public static function remove(string $source, string $destinationDirectory): void
+    {
+        if (!file_exists($destinationDirectory) || !is_dir($destinationDirectory)) {
+            throw new InvalidArgumentException('Destination directory does not exist: ' . $destinationDirectory);
+        }
+
+        $destination = rtrim($destinationDirectory, '/') . '/' . basename($source);
+
+        if (!file_exists($destination) || !is_file($destination)) {
+            throw new InvalidArgumentException('Destination file does not exist: ' . $destination);
+        }
+
+        if (!unlink($destination)) {
+            throw new RuntimeException('Failed to remove file at ' . $destination);
+        }
+    }
+
 }

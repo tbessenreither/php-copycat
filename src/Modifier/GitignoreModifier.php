@@ -24,8 +24,7 @@ class GitignoreModifier
 
         $lines = explode(PHP_EOL, $fileContent);
 
-        $groupStartString = self::GROUP_START . $groupName;
-        $groupEndString = self::GROUP_END . $groupName;
+        ['start' => $groupStartString, 'end' => $groupEndString] = self::getGroupStartAndStopStrings($groupName);
 
         $groupIndexStart = array_search($groupStartString, $lines, true);
         $groupIndexEnd = array_search($groupEndString, $lines, true);
@@ -69,6 +68,37 @@ class GitignoreModifier
         echo "        Added " . $stats['added'] . " entries to .gitignore, skipped " . $stats['skipped'] . " entries that already existed." . PHP_EOL;
 
         return implode(PHP_EOL, $lines);
+    }
+
+    public static function remove(string $fileContent, string $groupName): string
+    {
+        ['start' => $groupStartString, 'end' => $groupEndString] = self::getGroupStartAndStopStrings($groupName);
+
+        $lines = explode(PHP_EOL, $fileContent);
+        $groupIndexStart = array_search($groupStartString, $lines, true);
+        $groupIndexEnd = array_search($groupEndString, $lines, true);
+        if ($groupIndexStart === false || $groupIndexEnd === false) {
+            throw new RuntimeException('no valid group start and end found in .gitignore for group: ' . $groupName);
+        }
+
+        // Remove the group lines
+        $lines = array_merge(
+            array_slice($lines, 0, $groupIndexStart),
+            array_slice($lines, $groupIndexEnd + 1)
+        );
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    /**
+     * @return array{end: string, start: string}
+     */
+    private static function getGroupStartAndStopStrings(string $groupName): array
+    {
+        return [
+            'start' => self::GROUP_START . $groupName,
+            'end' => self::GROUP_END . $groupName,
+        ];
     }
 
 }

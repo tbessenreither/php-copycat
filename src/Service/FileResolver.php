@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat;
+namespace Tbessenreither\PhpCopycat\Service;
 
 use InvalidArgumentException;
 use Tbessenreither\PhpCopycat\Dto\PackageInfo;

@@ -36,9 +36,7 @@ class SymfonyModifier
 
         $bundleLine = $indentation . $bundleClassName . "::class => ['all' => true],";
         if (in_array($bundleLine, $lines, true)) {
-            echo "Bundle $bundleClassName is already registered in bundles.php, skipping." . PHP_EOL;
-
-            return $fileContent;
+            throw new RuntimeException('Bundle ' . $bundleClassName . ' is already registered in bundles.php, skipping.');
         }
 
 
@@ -52,6 +50,20 @@ class SymfonyModifier
         }
         // Insert the new bundle line at the correct position
         array_splice($lines, $insertIndex, 0, $bundleLine);
+
+        return implode(PHP_EOL, $lines);
+    }
+
+    public static function removeFromBundle(string $fileContent, string $bundleClassName): string
+    {
+        $lines = explode(PHP_EOL, $fileContent);
+
+        $bundleLine = null;
+        foreach ($lines as $lineKey => $line) {
+            if (strpos(trim($line), $bundleClassName . "::class") === 0) {
+                unset($lines[$lineKey]);
+            }
+        }
 
         return implode(PHP_EOL, $lines);
     }

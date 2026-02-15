@@ -2,12 +2,10 @@
 
 namespace Tbessenreither\PhpCopycat\Interface;
 
-use Tbessenreither\PhpCopycat\Copycat;
-
 
 interface CopycatConfigInterface
 {
 
-    public static function run(Copycat $copycat): void;
+    public static function run(CopycatInterface $copycat): void;
 
 }

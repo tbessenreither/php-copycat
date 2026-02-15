@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat;
+namespace Tbessenreither\PhpCopycat\Service;
 
-use RuntimeException;
-use Tbessenreither\PhpCopycat\Dto\PackageInfo;
 use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
 use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
 use Tbessenreither\PhpCopycat\Enum\KnownSystemsEnum;
+use Tbessenreither\PhpCopycat\Interface\CopycatInterface;
 use Tbessenreither\PhpCopycat\Modifier\FileCopy;
 use Tbessenreither\PhpCopycat\Modifier\GitignoreModifier;
 use Tbessenreither\PhpCopycat\Modifier\JsonModifier;
@@ -14,25 +13,14 @@ use Tbessenreither\PhpCopycat\Modifier\SymfonyModifier;
 use Throwable;
 
 
-class Copycat
+class Copycat extends CopycatBase implements CopycatInterface
 {
-    private string $projectRoot;
-    /**
-     * @var array<string, string>
-     */
-    private array $bufferedFiles = [];
-
-    public function __construct(
-        private PackageInfo $packageInfo,
-    ) {
-        $this->projectRoot = explode('vendor', __DIR__)[0];
-    }
 
     /**
      * Copies a file from the package to the specified target location in the project.
      * This method does not create directories if they do not exist, so the target directory must already exist before calling this method.
      */
-    public function copy(CopyTargetEnum $target, string $file, bool $overwrite = true): void
+    public function copy(CopyTargetEnum $target, string $file, bool $overwrite = true, bool $gitIgnore = false): void
     {
         try {
             echo '    - copy ' . $file . ' to ' . $target->value . '' . PHP_EOL;
@@ -48,6 +36,10 @@ class Copycat
                 destinationDirectory: $this->getTargetDir($target),
                 overwrite: $overwrite,
             );
+
+            if ($gitIgnore) {
+                $this->gitIgnoreAdd($target->value . '/' . basename($file));
+            }
 
         } catch (Throwable $e) {
             $this->logError('copy', $e);
@@ -155,16 +147,6 @@ class Copycat
         } catch (Throwable $e) {
             $this->logError('symfonyAddServiceToYaml', $e);
         }
-    }
-
-    private function logError(string $method, Throwable $e): void
-    {
-        echo '        ' . $method . " Error - " . $e->getMessage() . PHP_EOL;
-    }
-
-    private function getTargetDir(CopyTargetEnum $target): string
-    {
-        return $this->projectRoot . $target->value;
     }
 
 }
