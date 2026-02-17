@@ -16,7 +16,7 @@ interface CopycatInterface
      */
     public function copy(CopyTargetEnum $target, string $file, bool $overwrite = true, bool $gitIgnore = false, bool $createTargetDirectory = false): void;
 
-    public function jsonAdd(JsonTargetEnum $target, string $path, mixed $value): void;
+    public function jsonAdd(JsonTargetEnum $target, string $path, mixed $value, bool $overwrite = false): void;
 
     /**
      * Adds one or more entries to the .gitignore file in project root. If the .gitignore file does not exist, it will be created.

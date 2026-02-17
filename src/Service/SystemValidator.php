@@ -28,15 +28,14 @@ class SystemValidator
         }
 
         $indicatorFile = $system->getIndicatorFile();
+        $indicatorType = $system->getIndicatorType();
 
-        if ($system === KnownSystemsEnum::DDEV) {
+        if ($indicatorType === 'directory') {
             return file_exists($packageInfo->getProjectPath() . $indicatorFile) && is_dir($packageInfo->getProjectPath() . $indicatorFile);
-        } elseif ($system === KnownSystemsEnum::SYMFONY) {
+        } elseif ($indicatorType === 'file') {
             return file_exists($packageInfo->getProjectPath() . $indicatorFile) && is_file($packageInfo->getProjectPath() . $indicatorFile);
-        } elseif ($system === KnownSystemsEnum::GIT) {
-            return file_exists($packageInfo->getProjectPath() . $indicatorFile) && is_dir($packageInfo->getProjectPath() . $indicatorFile);
         } else {
-            throw new RuntimeException('Unknown system: ' . $system->value);
+            throw new RuntimeException('Unknown indicator type: ' . $indicatorType);
         }
     }
 

@@ -2,41 +2,75 @@
 
 namespace Tbessenreither\Copycat\Modifier;
 
+use InvalidArgumentException;
+use RuntimeException;
+use Tbessenreither\Copycat\Enum\JsonTargetEnum;
+
 
 class JsonModifier
 {
 
-    public static function add(string $fileContent, string $path, mixed $value): string
+    public static function add(string $fileContent, string $path, mixed $value, bool $overwrite = false): string
     {
         $jsonData = json_decode($fileContent, true);
 
         $keys = explode('.', $path);
         $current = &$jsonData;
         foreach ($keys as $key) {
-            if (!isset($current[$key]) || !is_array($current[$key])) {
+            if (is_array($current) && array_key_exists($key, $current)) {
+                $current = &$current[$key];
+                continue;
+            } elseif (is_array($current) && !array_key_exists($key, $current)) {
                 $current[$key] = null;
-            }
-            $current = &$current[$key];
-        }
-
-        if (is_array($current)) {
-            if (!is_array($value)) {
-                $value = [$value];
-            }
-            foreach ($value as $key => $item) {
-                if (is_string($key)) {
-                    $current[$key] = $item;
-                } elseif (!in_array($item, $current)) {
-                    $current[] = $item;
+                $current = &$current[$key];
+                continue;
+            } elseif (!is_array($current)) {
+                if ($current === null) {
+                    $current = [];
+                    $current[$key] = null;
+                    $current = &$current[$key];
+                    continue;
+                } elseif ($overwrite) {
+                    $current = [];
+                    $current[$key] = null;
+                    $current = &$current[$key];
+                    continue;
+                } else {
+                    throw new RuntimeException('Cannot add value at path "' . $path . '" because there is a non-array value at "' . implode('.', array_slice($keys, 0, count($keys) - 1)) . '" and overwrite is set to false.');
                 }
+            } else {
+                throw new RuntimeException('Unhandled data structure at path "' . implode('.', array_slice($keys, 0, count($keys) - 1)) . '".');
             }
-        } else {
-            $current = $value;
         }
 
-        $fileContentModified = json_encode($jsonData, JSON_PRETTY_PRINT);
+        if (
+            $current !== null && $current !== []
+            && !$overwrite
+        ) {
+            throw new RuntimeException('Cannot add value at path "' . $path . '" because there is already a value at that path and overwrite is set to false.');
+        }
+
+        $current = $value;
+
+        $fileContentModified = json_encode($jsonData, JSON_PRETTY_PRINT + JSON_UNESCAPED_SLASHES);
 
         return $fileContentModified;
+    }
+
+    public static function securityChecks(JsonTargetEnum $target, string $path): void
+    {
+        $allowedPaths = $target->allowedPaths();
+        if ($allowedPaths === null) {
+            return;
+        }
+
+        foreach ($allowedPaths as $allowedPath) {
+            if (str_starts_with($path . '.', $allowedPath . '.')) {
+                return;
+            }
+        }
+
+        throw new InvalidArgumentException('The target "' . $target->value . '" only allows modifications at the following paths: ' . implode(', ', $allowedPaths) . '. Your modification target was not in the allowed paths list.');
     }
 
 }

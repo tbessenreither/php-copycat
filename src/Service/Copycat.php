@@ -47,10 +47,12 @@ class Copycat extends CopycatBase implements CopycatInterface
         }
     }
 
-    public function jsonAdd(JsonTargetEnum $target, string $path, mixed $value): void
+    public function jsonAdd(JsonTargetEnum $target, string $path, mixed $value, bool $overwrite = false): void
     {
         try {
             echo "    - Adding value to " . $target->value . " at path " . $path . PHP_EOL;
+
+            JsonModifier::securityChecks(target: $target, path: $path);
             SystemValidator::validateSystem($this->packageInfo, $target->getSystem());
 
             $file = FileResolver::resolveInProject(
@@ -62,6 +64,7 @@ class Copycat extends CopycatBase implements CopycatInterface
                 fileContent: FileResolver::loadFile($file),
                 path: $path,
                 value: $value,
+                overwrite: $overwrite,
             );
 
             FileResolver::storeFileModification($file, $jsonModified);

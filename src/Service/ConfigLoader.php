@@ -25,21 +25,32 @@ class ConfigLoader
 
 	}
 
-	private static function getCopycatConfig(): array
+	public static function getCopycatConfig(): array
 	{
-		if (self::$configCache !== null) {
-			return self::$configCache;
+		$rootComposerJsonPath = FileResolver::getProjectRootDir() . DIRECTORY_SEPARATOR . 'composer.json';
+		if (is_file($rootComposerJsonPath)) {
+			$composerContent = file_get_contents($rootComposerJsonPath);
+			$composerData = json_decode($composerContent, true);
+			if (
+				isset($composerData['extra']) && is_array($composerData['extra'])
+				&& isset($composerData['extra']['copycat']) && is_array($composerData['extra']['copycat'])
+			) {
+				echo "Loaded config from composer.json at extra.copycat.\n";
+				return $composerData['extra']['copycat'];
+			}
 		}
 
-		$configFile = FileResolver::resolveConfigFile();
+		$possibleConfigFiles = [
+			FileResolver::getProjectRootDir() . DIRECTORY_SEPARATOR . CopyTargetEnum::COPYCAT_CONFIG->value . DIRECTORY_SEPARATOR . ConfigLoader::CONFIG_FILE_NAME,
+			realpath(__DIR__ . '/../../config/' . ConfigLoader::CONFIG_FILE_NAME),
+		];
 
-		$configContent = file_get_contents($configFile);
+		$resolvedFile = FileResolver::resolveFileByPriority($possibleConfigFiles);
+
+		$configContent = file_get_contents($resolvedFile);
 		$configContentDecoded = json_decode($configContent, true);
-		if ($configContentDecoded === null) {
-			throw new RuntimeException('Failed to decode copycat config file at ' . $configFile . '. JSON error: ' . json_last_error_msg());
-		}
 
-		self::$configCache = $configContentDecoded;
+		echo "Loaded config from file: " . $resolvedFile . "\n";
 		return $configContentDecoded;
 	}
 

@@ -111,17 +111,4 @@ class FileResolver
         throw new InvalidArgumentException('None of the possible files could be resolved: ' . implode(', ', $possibleFiles));
     }
 
-    public static function resolveConfigFile(): string
-    {
-        $possibleConfigFiles = [
-            self::getProjectRootDir() . DIRECTORY_SEPARATOR . CopyTargetEnum::COPYCAT_CONFIG->value . DIRECTORY_SEPARATOR . ConfigLoader::CONFIG_FILE_NAME,
-            realpath(__DIR__ . '/../../config/' . ConfigLoader::CONFIG_FILE_NAME),
-        ];
-
-        $resolvedFile = self::resolveFileByPriority($possibleConfigFiles);
-
-        echo "Resolved copycat config file: $resolvedFile" . PHP_EOL;
-        return $resolvedFile;
-    }
-
 }
