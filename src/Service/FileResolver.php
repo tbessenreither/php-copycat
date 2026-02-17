@@ -44,7 +44,27 @@ class FileResolver
     {
         $projectPath = $packageInfo->getProjectPath();
         $filePath = $projectPath . '/' . $file;
+
+        if ($createIfNotExists) {
+            $pathParts = explode('/', $file);
+            array_pop($pathParts);
+
+            $fileDir = implode('/', $pathParts);
+            if (!is_dir($projectPath . '/' . $fileDir)) {
+                echo "      Directory " . $fileDir . " does not exist, creating it." . PHP_EOL;
+                mkdir($projectPath . '/' . $fileDir, 0777, true);
+            }
+            if (!file_exists($filePath) || !is_file($filePath)) {
+                echo "      File " . $file . " does not exist, creating it." . PHP_EOL;
+                touch($filePath);
+            }
+
+        }
         $resolvedFile = realpath($filePath);
+
+        if ($resolvedFile === false) {
+            throw new InvalidArgumentException('File not found: ' . $filePath);
+        }
 
 
         if (!str_starts_with($resolvedFile, $projectPath)) {
@@ -54,8 +74,6 @@ class FileResolver
         if (str_starts_with($resolvedFile, $projectPath . 'vendor')) {
             throw new InvalidArgumentException('Resolved file is inside vendor directory, which is not allowed: ' . $file);
         }
-
-
 
         if ($resolvedFile === false || !file_exists($resolvedFile) || !is_file($resolvedFile)) {
             throw new InvalidArgumentException('Project file not found: ' . $file);

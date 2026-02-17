@@ -3,9 +3,11 @@
 namespace Tbessenreither\Copycat\Service;
 
 use Tbessenreither\Copycat\Enum\CopyTargetEnum;
+use Tbessenreither\Copycat\Enum\EnvTargetEnum;
 use Tbessenreither\Copycat\Enum\JsonTargetEnum;
 use Tbessenreither\Copycat\Enum\KnownSystemsEnum;
 use Tbessenreither\Copycat\Interface\CopycatInterface;
+use Tbessenreither\Copycat\Modifier\EnvModifier;
 use Tbessenreither\Copycat\Modifier\FileCopy;
 use Tbessenreither\Copycat\Modifier\GitignoreModifier;
 use Tbessenreither\Copycat\Modifier\JsonModifier;
@@ -150,6 +152,39 @@ class Copycat extends CopycatBase implements CopycatInterface
 
         } catch (Throwable $e) {
             $this->logError('symfonyAddServiceToYaml', $e);
+        }
+    }
+
+    /**
+     * @param array<string, string> $entries
+     */
+    public function envAdd(EnvTargetEnum $target, array $entries, bool $overwrite = false): void
+    {
+        if (!is_array($entries)) {
+            $entries = [$entries];
+        }
+        try {
+            echo "    - Adding " . count($entries) . " entries to " . $target->value . ":" . PHP_EOL;
+            SystemValidator::validateSystem($this->packageInfo, $target->getSystem());
+            $file = FileResolver::resolveInProject(
+                packageInfo: $this->packageInfo,
+                file: $target->value,
+                createIfNotExists: true,
+            );
+            var_dump($file);
+
+            $modifiedContent = EnvModifier::add(
+                fileContent: FileResolver::loadFile($file),
+                entries: $entries,
+                groupName: $this->packageInfo->getNamespace(),
+                overwrite: $overwrite,
+            );
+
+            FileResolver::storeFileModification($file, $modifiedContent);
+
+        } catch (Throwable $e) {
+            var_dump($e);
+            $this->logError('envAdd', $e);
         }
     }
 

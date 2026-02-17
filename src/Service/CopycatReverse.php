@@ -4,9 +4,11 @@ namespace Tbessenreither\Copycat\Service;
 
 use RuntimeException;
 use Tbessenreither\Copycat\Enum\CopyTargetEnum;
+use Tbessenreither\Copycat\Enum\EnvTargetEnum;
 use Tbessenreither\Copycat\Enum\JsonTargetEnum;
 use Tbessenreither\Copycat\Enum\KnownSystemsEnum;
 use Tbessenreither\Copycat\Interface\CopycatInterface;
+use Tbessenreither\Copycat\Modifier\EnvModifier;
 use Tbessenreither\Copycat\Modifier\FileCopy;
 use Tbessenreither\Copycat\Modifier\GitignoreModifier;
 use Tbessenreither\Copycat\Modifier\JsonModifier;
@@ -144,6 +146,38 @@ class CopycatReverse extends CopycatBase implements CopycatInterface
 
         } catch (Throwable $e) {
             $this->logError('symfonyAddServiceToYaml', $e);
+        }
+    }
+
+    /**
+     * @param array<string, string> $entries
+     */
+    public function envAdd(EnvTargetEnum $target, array $entries, bool $overwrite = false): void
+    {
+        try {
+            echo "    - Removing environment variables for " . $this->packageInfo->getNamespace() . PHP_EOL;
+            SystemValidator::validateSystem($this->packageInfo, $target->getSystem());
+
+            $file = FileResolver::resolveInProject(
+                packageInfo: $this->packageInfo,
+                file: $target->value,
+            );
+
+            if (!file_exists($file)) {
+                echo "      No " . $target->value . " file found, skipping." . PHP_EOL;
+
+                return;
+            }
+
+            $modifiedContent = EnvModifier::remove(
+                fileContent: FileResolver::loadFile($file),
+                groupName: $this->packageInfo->getNamespace(),
+            );
+
+            FileResolver::storeFileModification($file, $modifiedContent);
+
+        } catch (Throwable $e) {
+            $this->logError('envAdd', $e);
         }
     }
 

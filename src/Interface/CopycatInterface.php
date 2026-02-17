@@ -3,6 +3,7 @@
 namespace Tbessenreither\Copycat\Interface;
 
 use Tbessenreither\Copycat\Enum\CopyTargetEnum;
+use Tbessenreither\Copycat\Enum\EnvTargetEnum;
 use Tbessenreither\Copycat\Enum\JsonTargetEnum;
 use Throwable;
 
@@ -27,5 +28,10 @@ interface CopycatInterface
     public function symfonyBundleAdd(string $bundleClassName): void;
 
     public function symfonyAddServiceToYaml(string $serviceClass, array $arguments = []): void;
+
+    /**
+     * @param array<string, string> $entries
+     */
+    public function envAdd(EnvTargetEnum $target, array $entries, bool $overwrite = false): void;
 
 }

@@ -237,6 +237,28 @@ $copycat->symfonyBundleAdd(
 );
 ```
 
+### envAdd
+
+Add values to .env files. Keys will be sorted into the group that writes it, even if they are already part of the target file. This ensures that it's always clear which package is responsible for which entries in the .env file.
+You can choos to overwrite existing entries by setting the overwrite flag to true, this is helpfull for managing entries in the `.env.example` file where you want to make sure that the entries are always up to date, but for the regular `.env` file it's recommended to keep overwrite set to false to prevent accidental overwrites of user values.
+
+```php
+
+$copycat->envAdd(
+    entries: [ # this can also be a string if you want to add just a single entry
+        'MY_ENV' => 'value',
+        'MY_OTHER_ENV_VAR' => 'other_value',
+    ],
+    overwrite: false, # Whether to overwrite the value if the key already exists in the .env file. Default is false to prevent accidental overwrites.
+);
+```
+
+#### Available targets
+ All files will be created if they don't exist. There is no system check for this operation, as .env files are used in various types of projects, so it's up to you to make sure that you are adding entries to the right file for your project type and use case.
+
+- `EnvTargetEnum::DOT_LOCAL` - modifies the `.env.local` file.
+- `EnvTargetEnum::DOT_TEST` - modifies the `.env.test` file.
+- `EnvTargetEnum::DOT_EXAMPLE` - modifies the `.env.example` file.
 
 ---
 
