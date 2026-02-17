@@ -171,6 +171,13 @@ PHP Copycat finished.
 
 ## Available Operations
 
+Table of operations
+- [copy](#copy)
+- [jsonAdd](#jsonadd)
+- [gitIgnoreAdd](#gitignoreadd)
+- [symfonyBundleAdd](#symfonybundleadd)
+- [envAdd](#envadd)
+
 ### copy
 
 Copy a file from your package to a specific target in the project (e.g., DDEV commands, Symfony config, public directory, etc.). The operation will only be executed if the project matches the expected system for the target (e.g., only copying Symfony files if the project is a Symfony app). This ensures that files are only copied in relevant projects, preventing accidental changes in the wrong type of project.
