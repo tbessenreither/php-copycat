@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat\Service;
+namespace Tbessenreither\Copycat\Service;
 
-use Tbessenreither\PhpCopycat\Dto\PackageInfo;
-use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
+use Tbessenreither\Copycat\Dto\PackageInfo;
+use Tbessenreither\Copycat\Enum\CopyTargetEnum;
 use Throwable;
 
 
@@ -15,7 +15,7 @@ abstract class CopycatBase
         protected ?string $projectRoot = null,
     ) {
         if ($this->projectRoot === null) {
-            $this->projectRoot = explode('vendor', __DIR__)[0];
+            $this->projectRoot = FileResolver::getProjectRootDir();
         }
     }
 

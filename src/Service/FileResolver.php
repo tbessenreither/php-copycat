@@ -1,9 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat\Service;
+namespace Tbessenreither\Copycat\Service;
 
+use Directory;
 use InvalidArgumentException;
-use Tbessenreither\PhpCopycat\Dto\PackageInfo;
+use Tbessenreither\Copycat\Dto\PackageInfo;
+use Tbessenreither\Copycat\Enum\CopyTargetEnum;
 
 
 class FileResolver
@@ -91,6 +93,35 @@ class FileResolver
             file_put_contents($file, $content);
         }
         self::$bufferedFiles = [];
+    }
+
+    public static function getProjectRootDir(): string
+    {
+        return realpath(explode('vendor', __DIR__)[0]);
+    }
+
+    public static function resolveFileByPriority(array $possibleFiles): string
+    {
+        foreach ($possibleFiles as $file) {
+            if (file_exists($file) && is_file($file)) {
+                return rtrim(realpath($file), DIRECTORY_SEPARATOR);
+            }
+        }
+
+        throw new InvalidArgumentException('None of the possible files could be resolved: ' . implode(', ', $possibleFiles));
+    }
+
+    public static function resolveConfigFile(): string
+    {
+        $possibleConfigFiles = [
+            self::getProjectRootDir() . DIRECTORY_SEPARATOR . CopyTargetEnum::COPYCAT_CONFIG->value . DIRECTORY_SEPARATOR . 'copycat.json',
+            '../../config/copycat.json',
+        ];
+
+        $resolvedFile = self::resolveFileByPriority($possibleConfigFiles);
+
+        echo "Resolved copycat config file: $resolvedFile" . PHP_EOL;
+        return $resolvedFile;
     }
 
 }

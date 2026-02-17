@@ -1,13 +1,13 @@
 {
 	"scripts": {
 		"post-install-cmd": [
-			"Tbessenreither\\PhpCopycat\\Runner::run"
+			"Tbessenreither\\Copycat\\Runner::run"
 		],
 		"post-update-cmd": [
-			"Tbessenreither\\PhpCopycat\\Runner::run"
+			"Tbessenreither\\Copycat\\Runner::run"
 		],
 		"pre-package-uninstall": [
-			"Tbessenreither\\PhpCopycat\\Runner::run"
+			"Tbessenreither\\Copycat\\Runner::run"
 		]
 	}
 }

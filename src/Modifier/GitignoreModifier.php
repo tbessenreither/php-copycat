@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat\Modifier;
+namespace Tbessenreither\Copycat\Modifier;
 
 use RuntimeException;
 

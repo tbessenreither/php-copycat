@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat;
+namespace Tbessenreither\Copycat;
 
 use Composer\DependencyResolver\Operation\OperationInterface;
 use Composer\Installer\PackageEvent;
 use Composer\Script\Event;
 use ReflectionClass;
-use Tbessenreither\PhpCopycat\Dto\PackageInfo;
-use Tbessenreither\PhpCopycat\Interface\CopycatConfigInterface;
-use Tbessenreither\PhpCopycat\Service\Copycat;
-use Tbessenreither\PhpCopycat\Service\CopycatReverse;
-use Tbessenreither\PhpCopycat\Service\FileResolver;
+use Tbessenreither\Copycat\Interface\CopycatConfigInterface;
+use Tbessenreither\Copycat\Service\Copycat;
+use Tbessenreither\Copycat\Service\CopycatReverse;
+use Tbessenreither\Copycat\Service\FileResolver;
+use Tbessenreither\Copycat\Service\NamespaceCrawler;
 
 
 class Runner
@@ -49,7 +49,7 @@ class Runner
         $packageInfoStringCleaned = $matches[1];
         $packageInfoStringCleaned = trim($packageInfoStringCleaned);
 
-        $namespaces = self::getInstalledNamespaces();
+        $namespaces = NamespaceCrawler::getPackageInfos();
         $packageInfo = null;
         foreach ($namespaces as $namespace) {
             if ($namespace->getComposerName() === $packageInfoStringCleaned) {
@@ -87,7 +87,7 @@ class Runner
 
     private static function onInstallOrUpdate(): void
     {
-        $namespaces = self::getInstalledNamespaces();
+        $namespaces = NamespaceCrawler::getPackageInfos();
 
         foreach ($namespaces as $packageInfo) {
             $copycatInstance = new Copycat(
@@ -108,79 +108,6 @@ class Runner
             echo "Running copycat for namespace " . $packageInfo->getNamespace() . PHP_EOL;
             $copycatClass::run($copycatInstance);
         }
-    }
-
-    /**
-     * @return PackageInfo[]
-     */
-    private static function getInstalledNamespaces(): array
-    {
-        $currentDir = __DIR__;
-        $projectRootDir = explode('vendor', $currentDir)[0];
-        $vendorDir = $projectRootDir . 'vendor';
-
-        //itterate over all folders in vendor, read the composer.json and extract the namespaces from the autoload section
-        $namespaces = [];
-        foreach (scandir($vendorDir) as $vendorFolder) {
-            if (
-                $vendorFolder === '.'
-                || $vendorFolder === '..'
-                || !is_dir($vendorDir . '/' . $vendorFolder)
-            ) {
-                continue;
-            }
-
-            foreach (scandir($vendorDir . '/' . $vendorFolder) as $packageFolder) {
-                if (
-                    $packageFolder === '.'
-                    || $packageFolder === '..'
-                    || !is_dir($vendorDir . '/' . $vendorFolder . '/' . $packageFolder)
-                ) {
-                    continue;
-                }
-                $packageFolder = rtrim($packageFolder, '/');
-
-                $packageDirectory = $vendorDir . '/' . $vendorFolder . '/' . $packageFolder;
-                $packageDirectory = rtrim($packageDirectory, '/');
-
-                $composerFile = $packageDirectory . '/composer.json';
-
-                if (!file_exists($composerFile)) {
-                    echo "No composer.json found in " . $composerFile . PHP_EOL;
-                    continue;
-                }
-
-                $composerContent = file_get_contents($composerFile);
-                $composerContentDecoded = json_decode($composerContent, true);
-                if (
-                    !isset($composerContentDecoded['autoload'])
-                    || !isset($composerContentDecoded['autoload']['psr-4'])
-                ) {
-                    continue;
-                }
-
-                foreach ($composerContentDecoded['autoload']['psr-4'] as $namespace => $path) {
-                    if (is_array($path)) {
-                        if (count($path) === 1) {
-                            $path = $path[0];
-                        } else {
-                            echo "Multiple paths for namespace " . $namespace . " in package " . $vendorFolder . '/' . $packageFolder . PHP_EOL;
-                            continue;
-                        }
-                    }
-                    $path = rtrim($path, '/');
-                    $namespaces[] = new PackageInfo(
-                        namespace: $namespace,
-                        projectPath: $projectRootDir,
-                        autoloadPath: $packageDirectory . '/' . $path,
-                        packagePath: $packageDirectory,
-                        composerName: $vendorFolder . '/' . $packageFolder,
-                    );
-                }
-            }
-        }
-
-        return $namespaces;
     }
 
 }

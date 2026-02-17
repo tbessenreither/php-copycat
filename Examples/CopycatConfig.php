@@ -2,10 +2,10 @@
 
 namespace Tbessenreither\MultiLevelCache;
 
-use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
-use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
-use Tbessenreither\PhpCopycat\Interface\CopycatConfigInterface;
-use Tbessenreither\PhpCopycat\Interface\CopycatInterface;
+use Tbessenreither\Copycat\Enum\CopyTargetEnum;
+use Tbessenreither\Copycat\Enum\JsonTargetEnum;
+use Tbessenreither\Copycat\Interface\CopycatConfigInterface;
+use Tbessenreither\Copycat\Interface\CopycatInterface;
 
 
 class CopycatConfig implements CopycatConfigInterface
