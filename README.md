@@ -1,11 +1,12 @@
 
 # PHP Copycat
 
+## What is it?
+PHP Copycat is a Composer package that provides a simple and safe way for PHP packages to automate file copying and configuration modifications in the projects that depend on them. It allows package authors to define a `CopycatConfig` class with operations like copying files, modifying JSON configurations, adding entries to `.gitignore`, and registering Symfony bundles. These operations are executed automatically when users run `composer install` or `composer update`, ensuring that necessary setup steps are performed without manual intervention.
 
-**PHP Copycat** is a utility package for automating file copying, JSON modifications, .gitignore management, and Symfony bundle registration in PHP projects. It is designed for flexible configuration and easy integration, allowing you to define custom copy, JSON, and project automation operations via configuration classes.
+All operations are designed to be safe and are based on a whitelist of allowed namespaces, so the project needs to explicitly allow the package to perform operations. Additionally, Copycat includes smart system validation to ensure that operations are only executed if the project matches the expected system (e.g., only copying Symfony files if the project is a Symfony app). This prevents accidental or unsafe changes in the wrong type of project.
 
-> **Smart Target Validation:**
-> Copycat automatically checks if your project matches the expected system (e.g., Symfony, DDEV) for each operation. If the project does not match, the operation is skipped, preventing unwanted or unsafe changes.
+Config files like the `composer.json` have additional protections to prevent malicious or accidental changes. For example, writes outside of the `extra` section are not allowed via json modifier, and the `copy` operation will not allow copying files from outside your package scope, ensuring safe and predictable automation. Additional to that all targets are predefined via enums in copycat, so there is no possibility to write to arbitrary paths in the project. This makes it a secure and reliable tool for package authors to enhance the user experience of their packages with necessary setup steps.
 
 ---
 
@@ -33,52 +34,39 @@ PHP Copycat is actively developed. Planned features include:
 
 ---
 
-## Typical Workflow
+## Setup
 
-On `composer install` or `composer update`, Copycat will:
+### Always
 
-- Copy required scripts (e.g., shell scripts, command files) to designated locations
-- Update JSON configuration files with new or modified values
-- Ensure your project is ready to use new features or settings from dependencies
+Require Copycat as a dependency.
 
----
+First add the following lines to the `repositories` section of your `composer.json` to allow installation from GitHub:
 
-## Installation
+```json
+"repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/tbessenreither/copycat"
+    }
+]
+```
 
-Install via Composer:
-
-```sh
+Then require the package:
+```bash
 composer require tbessenreither/php-copycat
 ```
 
----
 
-## Usage
+### Within a package
 
+Create a `CopycatConfig` class in the autoload root of your package that implements `CopycatConfigInterface`. This class will define the operations to be performed in the projects that depend on your package (e.g., copying files, modifying JSON, adding .gitignore entries, registering Symfony bundles). See the [Usage](#usage) section below for details and examples.
 
-### 1. Create a configuration class
-
-Implement the `CopycatConfigInterface` in a class named `CopycatConfig`. This class **must** be located in the autoload root of your package (as defined in your `composer.json` autoload section) so it can be discovered and executed automatically.
-
-**System-aware operations:**
-When you call methods like `copy()`, `jsonAdd()`, or `symfonyBundleAdd()`, Copycat will first check if your project matches the expected system for the target (e.g., only copy Symfony files if your project is a Symfony app). If not, the operation is skipped and your project is left unchanged.
-
-
-Example: [Examples/CopycatConfig.php](Examples/CopycatConfig.php)
-This example demonstrates a full-featured Copycat configuration class. It shows how to:
-- Copy files to a DDEV target
-- Add and modify JSON values in a project file
-- Add entries to .gitignore in a grouped way
-- Register a Symfony bundle
-- Register a service in Symfony's services.yaml
-
+Example:
 ```php
 <?php declare(strict_types=1);
-
-namespace Tbessenreither\MultiLevelCache;
+namespace Tbessenreither\MyPackage;
 
 use Tbessenreither\Copycat\Enum\CopyTargetEnum;
-use Tbessenreither\Copycat\Enum\JsonTargetEnum;
 use Tbessenreither\Copycat\Interface\CopycatConfigInterface;
 use Tbessenreither\Copycat\Interface\CopycatInterface;
 
@@ -86,57 +74,19 @@ class CopycatConfig implements CopycatConfigInterface
 {
     public static function run(CopycatInterface $copycat): void
     {
-        /* DDEV specific configuration */
         $copycat->copy(
             target: CopyTargetEnum::DDEV_COMMANDS_WEB,
             file: 'ddev/commands/web/test-command.sh',
             overwrite: false,
-            gitIgnore: true, # This will add the copied file to .gitignore, preventing it from being committed to version control (useful for files that are not meant to be modified by the user like commands or binaries)
-        );
-
-
-        /* General JSON modifications */
-        $copycat->jsonAdd(
-            target: JsonTargetEnum::TEST,
-            path: 'items',
-            value: ['item4', 'item5']
-        );
-        $copycat->jsonAdd(
-            target: JsonTargetEnum::TEST,
-            path: 'config',
-            value: [
-                'setting1' => 'value1 ' . time(),
-                'setting2' => 'value2 ' . time(),
-            ],
-        );
-
-        $copycat->gitIgnoreAdd(
-            entries: [
-                CopyTargetEnum::DDEV_COMMANDS_WEB->value . '/mlc-make',
-                CopyTargetEnum::DDEV_COMMANDS_WEB->value . '/mlc-update',
-            ]
-        );
-
-        /* Symfony specific configuration */
-        $copycat->symfonyBundleAdd(
-            bundleClassName: MultiLevelCacheBundle::class,
-        );
-
-        $copycat->symfonyAddServiceToYaml(
-            serviceClass: CopycatConfig::class,
-            arguments: [
-                '$packageInfo' => 'Tbessenreither\MultiLevelCache\Dto\PackageInfo',
-            ],
+            gitIgnore: true,
         );
     }
 }
 ```
 
----
+### Within a project
 
-### 2. Configure Composer scripts
-
-Add the following to your `composer.json` to run Copycat automatically after install/update:
+To execute Copycat operations in a project, add the following to your `composer.json` scripts section:
 
 ```json
 "scripts": {
@@ -152,9 +102,21 @@ Add the following to your `composer.json` to run Copycat automatically after ins
 }
 ```
 
----
+On first execution Copycat will add a boilerplate Whitelist to your `composer.json` if it doesn't exist, which you can then customize to allow specific packages to perform operations in your project. This ensures that no package can perform operations without your explicit permission.
 
-Whenever you run `composer install` or `composer update`, Copycat will execute your `CopycatConfig::run()` methods, performing all the defined operations in a safe and system-aware manner.
+The section will look something like this after the first execution:
+```json
+"extra": {
+    "copycat": {
+        "whitelist": [
+            "Tbessenreither\\"
+        ]
+    }
+}
+```
+
+This is it. Whenever you run `composer install`, `composer update`, or `composer remove`, Copycat will automatically execute the defined operations in the `CopycatConfig` classes of your dependencies, performing necessary setup steps in a safe and system-aware manner.
+
 
 Example output on execution:
 
@@ -207,41 +169,74 @@ Writing buffered file modifications to disk...
 PHP Copycat finished.
 ```
 
-## API Reference
+## Available Operations
 
-- `Copycat::copy(CopyTargetEnum target, string file, bool overwrite=true, bool gitIgnore=false)` — Copy a file to a specified target. See [src/Modifier/FileCopy.php](src/Modifier/FileCopy.php)
-- `Copycat::jsonAdd(JsonTargetEnum target, string path, mixed value)` — Add or modify a value in a JSON file at the given path. See [src/Modifier/JsonModifier.php](src/Modifier/JsonModifier.php)
-- `Copycat::gitIgnoreAdd(string[] entries)` — Add one or more entries to the project’s `.gitignore` file, grouped by your package namespace. See [src/Modifier/GitignoreModifier.php](src/Modifier/GitignoreModifier.php)
-- `Copycat::symfonyBundleAdd(class-string bundleClassName)` — Register a Symfony bundle in `config/bundles.php` (if the project is a Symfony app). See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
-- `Copycat::symfonyAddServiceToYaml(class-string serviceClass, array arguments)` — Register a service in Symfony's `services.yaml` with optional constructor arguments. See [src/Modifier/SymfonyModifier.php](src/Modifier/SymfonyModifier.php)
+### copy
 
----
+Copy a file from your package to a specific target in the project (e.g., DDEV commands, Symfony config, public directory, etc.). The operation will only be executed if the project matches the expected system for the target (e.g., only copying Symfony files if the project is a Symfony app). This ensures that files are only copied in relevant projects, preventing accidental changes in the wrong type of project.
 
-## Example
+```php
+
+$copycat->copy(
+    target: CopyTargetEnum::DDEV_COMMANDS_WEB, # The target location for the copied file. Renaming is not supported, the file will be copied with the same name to the target location.
+    file: 'ddev/commands/web/test-command.sh', # Path to the file in your package from the root directory (Not the autoload path of your namespace)
+    overwrite: false, # Whether to overwrite the file if it already exists in the target location. Default is false to prevent accidental overwrites.
+    gitIgnore: true, # Optionally add the copied file to .gitignore. Default is false.
+);
+```
+
+#### Available targets
+- `CopyTargetEnum::DDEV_COMMANDS_WEB` - copies to the `.ddev/commands/web` directory of the project. Only runs if the project is a DDEV project.
+- `CopyTargetEnum::DDEV_COMMANDS_HOST` - copies to the `.ddev/commands/host` directory of the project. Only runs if the project is a DDEV project.
+- `CopyTargetEnum::SYMFONY_BIN` - copies to the `bin` directory of the project. Only runs if the project is a Symfony app.
+- `CopyTargetEnum::SYMFONY_CONFIG_PACKAGES` - copies to the `config/packages` directory of the project. Only runs if the project is a Symfony app.
+- `CopyTargetEnum::SYMFONY_CONFIG_ROUTES` - copies to the `config/routes` directory of the project. Only runs if the project is a Symfony app.
+- `CopyTargetEnum::PUBLIC` - copies to the `public` directory of the project.
+- `CopyTargetEnum::COPYCAT_CONFIG` - copies files to the `.copycat` directory in the project root.
+
+### jsonAdd
+
+Add or modify JSON values at any path in a target JSON file. The operation will only be executed if the project matches the expected system for the target (e.g., only modifying Symfony config if the project is a Symfony app). This ensures that configuration changes are only made in relevant projects, preventing accidental changes in the wrong type of project.
+
+```php
+$copycat->jsonAdd(
+    target: JsonTargetEnum::COMPOSER_JSON, # The target JSON file to modify. This determines the expected system for the operation (e.g., only allowing modifications to composer.json in general projects, only allowing modifications to Symfony config files in Symfony apps, etc.). Also determines which paths are allowed to be modified (e.g., only allowing modifications in the extra section of composer.json) to ensure safe modifications.
+    path: 'extra.somePackageConfig', # Dot notation of the path through the JSON structure where the value should be added or modified. If the path does not exist, it will be created.
+    value: [
+        'key1' => 'value1',
+        'key2' => 'value2',
+    ],
+    overwrite: true, # Whether to overwrite the value if it already exists at the specified path. Default is false to prevent accidental overwrites.
+);
+```
+
+#### Available targets
+- `JsonTargetEnum::COMPOSER_JSON` - modifies the `composer.json` file of the project. Only allows modifications in the `extra` section to ensure safe changes.
 
 
-See [Examples/CopycatConfig.php](Examples/CopycatConfig.php) for a full configuration example, including .gitignore and Symfony bundle registration.
+### gitIgnoreAdd
 
----
+Add entries to the project's `.gitignore` file grouped by package namespace so you see what packages are adding which entries. The operation will only be executed if the project is a git repository.
 
-## Project Structure
+```php
+$copycat->gitIgnoreAdd(
+    entries: [ # this can also be a string if you want to add just a single entry
+        'ignored-file.txt',
+        'ignored-directory/*',
+    ],
+);
+```
 
-- `src/` — Main source code
-    - `Copycat.php` — Main entry point
-    - `Runner.php` — Composer script runner
-    - `Modifier/` — File and JSON modification logic
-    - `Enum/` — Target enums for copy and JSON operations
-    - `Dto/` — Data transfer objects
-    - `Interface/` — Configuration interface
-- `Examples/` — Example configuration and usage
+### symfonyBundleAdd
 
----
+Register a Symfony bundle automatically in `config/bundles.php`. The operation will only be executed if the project is a Symfony app. This methods checks the given class for implementing the Symfony `BundleInterface` to prevent invalid entries in `bundles.php`. If the class does not implement the interface or other problems, the method will refuse to add the bundle and print the error in the console output.
 
+```php
+$copycat->symfonyBundleAdd(
+    bundleClassName: Tbessenreither\MyPackage\MyPackageBundle::class,
+);
+```
 
-## Security & Safety
-
-- The `copy` operation is protected: it will not allow copying files from outside your package scope, ensuring safe and predictable automation.
-- **System validation:** Operations are only performed if your project matches the expected system for the target (e.g., Symfony, DDEV). This prevents accidental or unsafe changes in the wrong type of project.
 
 ---
 
