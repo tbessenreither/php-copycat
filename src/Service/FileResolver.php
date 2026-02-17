@@ -115,7 +115,7 @@ class FileResolver
     {
         $possibleConfigFiles = [
             self::getProjectRootDir() . DIRECTORY_SEPARATOR . CopyTargetEnum::COPYCAT_CONFIG->value . DIRECTORY_SEPARATOR . 'copycat.json',
-            '../../config/copycat.json',
+            realpath(__DIR__ . '/../../config/copycat.json'),
         ];
 
         $resolvedFile = self::resolveFileByPriority($possibleConfigFiles);

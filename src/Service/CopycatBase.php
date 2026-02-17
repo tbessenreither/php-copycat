@@ -26,7 +26,7 @@ abstract class CopycatBase
 
     protected function getTargetDir(CopyTargetEnum $target): string
     {
-        return $this->projectRoot . $target->value;
+        return $this->projectRoot .'/'. $target->value;
     }
 
 }

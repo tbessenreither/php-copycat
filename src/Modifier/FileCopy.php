@@ -15,6 +15,10 @@ class FileCopy
             throw new InvalidArgumentException('Source file does not exist: ' . $source);
         }
 
+        if ($createTargetDirectory) {
+            self::ensureDirectoryExists($destinationDirectory);
+        }
+
         if (!file_exists($destinationDirectory) || !is_dir($destinationDirectory)) {
             throw new InvalidArgumentException('Destination directory does not exist: ' . $destinationDirectory);
         }
@@ -23,10 +27,6 @@ class FileCopy
 
         if (!$overwrite && file_exists($destination)) {
             throw new RuntimeException('Destination file already exists: ' . $destination);
-        }
-
-        if ($createTargetDirectory) {
-            self::ensureDirectoryExists($destinationDirectory);
         }
 
         if (!copy($source, $destination)) {
