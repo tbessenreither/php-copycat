@@ -23,13 +23,13 @@ Config files like the `composer.json` have additional protections to prevent mal
 - Secure: prevents copying files from outside your package scope
 - Easily integrate with Composer scripts for automation
 - Partial reversal of operations on package removal (removing copied files, removing bundle, removing .gitignore section)
+- Adding values to .env files. All variables will be grouped by package namespace, and you can choose to overwrite existing entries or keep them to prevent accidental overwrites of user values.
 
 ### Planned Features
 
 PHP Copycat is actively developed. Planned features include:
 - Support for reversing all operations on package removal (e.g., removing copied files, removing bundle, removing services, removing .gitignore section).
 - Support for modifying yaml configuration files
-- Adding / Modifying the .env.local file (and only this file).
 - Echo of messages after execution (e.g., "Package [Packagename]: To use this package, do X, Y, Z...")
 
 ---
