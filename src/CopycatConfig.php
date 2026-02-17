@@ -5,6 +5,7 @@ namespace Tbessenreither\Copycat;
 use Tbessenreither\Copycat\Enum\CopyTargetEnum;
 use Tbessenreither\Copycat\Interface\CopycatConfigInterface;
 use Tbessenreither\Copycat\Interface\CopycatInterface;
+use Tbessenreither\Copycat\Service\ConfigLoader;
 
 
 class CopycatConfig implements CopycatConfigInterface
@@ -14,7 +15,7 @@ class CopycatConfig implements CopycatConfigInterface
     {
         $copycat->copy(
             target: CopyTargetEnum::COPYCAT_CONFIG,
-            file: 'config/copycat.json',
+            file: 'config/' . ConfigLoader::CONFIG_FILE_NAME,
             overwrite: false,
             gitIgnore: false,
             createTargetDirectory: true,

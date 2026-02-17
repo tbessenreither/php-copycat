@@ -8,6 +8,7 @@ use Tbessenreither\Copycat\Enum\CopyTargetEnum;
 
 class ConfigLoader
 {
+	public const string CONFIG_FILE_NAME = 'config.json';
 	public static $configCache = null;
 
 	public static function getWhitelistedNamespaces(): array|false

@@ -114,8 +114,8 @@ class FileResolver
     public static function resolveConfigFile(): string
     {
         $possibleConfigFiles = [
-            self::getProjectRootDir() . DIRECTORY_SEPARATOR . CopyTargetEnum::COPYCAT_CONFIG->value . DIRECTORY_SEPARATOR . 'config.json',
-            realpath(__DIR__ . '/../../config/config.json'),
+            self::getProjectRootDir() . DIRECTORY_SEPARATOR . CopyTargetEnum::COPYCAT_CONFIG->value . DIRECTORY_SEPARATOR . ConfigLoader::CONFIG_FILE_NAME,
+            realpath(__DIR__ . '/../../config/' . ConfigLoader::CONFIG_FILE_NAME),
         ];
 
         $resolvedFile = self::resolveFileByPriority($possibleConfigFiles);
