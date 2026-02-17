@@ -53,7 +53,7 @@ First add the following lines to the `repositories` section of your `composer.js
 
 Then require the package:
 ```bash
-composer require tbessenreither/php-copycat
+composer require tbessenreither/copycat
 ```
 
 
