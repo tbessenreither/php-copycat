@@ -59,7 +59,7 @@ composer require tbessenreither/copycat
 
 ### Within a package
 
-Create a `CopycatConfig` class in the autoload root of your package that implements `CopycatConfigInterface`. This class will define the operations to be performed in the projects that depend on your package (e.g., copying files, modifying JSON, adding .gitignore entries, registering Symfony bundles). See the [Usage](#usage) section below for details and examples.
+Create a `CopycatConfig` class in the autoload root of your package that implements `CopycatConfigInterface`. This class will define the operations to be performed in the projects that depend on your package (e.g., copying files, modifying JSON, adding .gitignore entries, registering Symfony bundles). See the [Available Operations](#available-operations) section below for details and examples.
 
 Example:
 ```php
