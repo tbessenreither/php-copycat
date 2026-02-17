@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat\Enum;
+namespace Tbessenreither\Copycat\Enum;
 
 
 enum CopyTargetEnum: string
@@ -11,6 +11,7 @@ enum CopyTargetEnum: string
     case SYMFONY_CONFIG_PACKAGES = 'config/packages';
     case SYMFONY_CONFIG_ROUTES = 'config/routes';
     case PUBLIC = 'public';
+    case COPYCAT_CONFIG = '.copycat';
 
     public function getSystem(): ?KnownSystemsEnum
     {

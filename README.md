@@ -77,10 +77,10 @@ This example demonstrates a full-featured Copycat configuration class. It shows 
 
 namespace Tbessenreither\MultiLevelCache;
 
-use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
-use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
-use Tbessenreither\PhpCopycat\Interface\CopycatConfigInterface;
-use Tbessenreither\PhpCopycat\Interface\CopycatInterface;
+use Tbessenreither\Copycat\Enum\CopyTargetEnum;
+use Tbessenreither\Copycat\Enum\JsonTargetEnum;
+use Tbessenreither\Copycat\Interface\CopycatConfigInterface;
+use Tbessenreither\Copycat\Interface\CopycatInterface;
 
 class CopycatConfig implements CopycatConfigInterface
 {
@@ -141,13 +141,13 @@ Add the following to your `composer.json` to run Copycat automatically after ins
 ```json
 "scripts": {
     "post-install-cmd": [
-        "Tbessenreither\\PhpCopycat\\Runner::run"
+        "Tbessenreither\\Copycat\\Runner::run"
     ],
     "post-update-cmd": [
-        "Tbessenreither\\PhpCopycat\\Runner::run"
+        "Tbessenreither\\Copycat\\Runner::run"
     ],
     "pre-package-uninstall": [
-        "Tbessenreither\\PhpCopycat\\Runner::run"
+        "Tbessenreither\\Copycat\\Runner::run"
     ]
 }
 ```
@@ -175,9 +175,9 @@ Running copycat for namespace Tbessenreither\MultiLevelCache
     - Adding Tbessenreither\MultiLevelCache\DataCollector\MultiLevelCacheDataCollector to symfony bundles.php.
         Loading file: /var/www/html/config/bundles.php
         symfonyBundleAdd Error - Bundle class Tbessenreither\MultiLevelCache\DataCollector\MultiLevelCacheDataCollector does not implement the Symfony BundleInterface. This will not be added to bundles.php
-    - Adding service Tbessenreither\PhpCopycat\Copycat to symfony services.yaml.
+    - Adding service Tbessenreither\Copycat\Copycat to symfony services.yaml.
         Loading file: /var/www/html/config/services.yaml
-        symfonyAddServiceToYaml Error - Service Tbessenreither\PhpCopycat\Copycat is already registered in services.yaml, skipping.
+        symfonyAddServiceToYaml Error - Service Tbessenreither\Copycat\Copycat is already registered in services.yaml, skipping.
 
 Writing buffered file modifications to disk...
     - Writing file to disk: /var/www/html/src/test.json

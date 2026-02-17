@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat\Modifier;
+namespace Tbessenreither\Copycat\Modifier;
 
 use InvalidArgumentException;
 use RuntimeException;
@@ -9,7 +9,7 @@ use RuntimeException;
 class FileCopy
 {
 
-    public static function copy(string $source, string $destinationDirectory, bool $overwrite = true): void
+    public static function copy(string $source, string $destinationDirectory, bool $overwrite = true, bool $createTargetDirectory = false): void
     {
         if (!file_exists($source) || !is_file($source)) {
             throw new InvalidArgumentException('Source file does not exist: ' . $source);
@@ -23,6 +23,10 @@ class FileCopy
 
         if (!$overwrite && file_exists($destination)) {
             throw new RuntimeException('Destination file already exists: ' . $destination);
+        }
+
+        if ($createTargetDirectory) {
+            self::ensureDirectoryExists($destinationDirectory);
         }
 
         if (!copy($source, $destination)) {
@@ -44,6 +48,17 @@ class FileCopy
 
         if (!unlink($destination)) {
             throw new RuntimeException('Failed to remove file at ' . $destination);
+        }
+    }
+
+    private static function ensureDirectoryExists(string $directory): void
+    {
+        if (!file_exists($directory)) {
+            if (!mkdir($directory, 0755, true) && !is_dir($directory)) {
+                throw new RuntimeException('Failed to create directory: ' . $directory);
+            }
+        } elseif (!is_dir($directory)) {
+            throw new InvalidArgumentException('Path exists but is not a directory: ' . $directory);
         }
     }
 

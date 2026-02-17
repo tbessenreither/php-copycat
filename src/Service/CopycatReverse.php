@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat\Service;
+namespace Tbessenreither\Copycat\Service;
 
 use RuntimeException;
-use Tbessenreither\PhpCopycat\Enum\CopyTargetEnum;
-use Tbessenreither\PhpCopycat\Enum\JsonTargetEnum;
-use Tbessenreither\PhpCopycat\Enum\KnownSystemsEnum;
-use Tbessenreither\PhpCopycat\Interface\CopycatInterface;
-use Tbessenreither\PhpCopycat\Modifier\FileCopy;
-use Tbessenreither\PhpCopycat\Modifier\GitignoreModifier;
-use Tbessenreither\PhpCopycat\Modifier\JsonModifier;
-use Tbessenreither\PhpCopycat\Modifier\SymfonyModifier;
+use Tbessenreither\Copycat\Enum\CopyTargetEnum;
+use Tbessenreither\Copycat\Enum\JsonTargetEnum;
+use Tbessenreither\Copycat\Enum\KnownSystemsEnum;
+use Tbessenreither\Copycat\Interface\CopycatInterface;
+use Tbessenreither\Copycat\Modifier\FileCopy;
+use Tbessenreither\Copycat\Modifier\GitignoreModifier;
+use Tbessenreither\Copycat\Modifier\JsonModifier;
+use Tbessenreither\Copycat\Modifier\SymfonyModifier;
 use Throwable;
 
 
@@ -21,7 +21,7 @@ class CopycatReverse extends CopycatBase implements CopycatInterface
      * Copies a file from the package to the specified target location in the project.
      * This method does not create directories if they do not exist, so the target directory must already exist before calling this method.
      */
-    public function copy(CopyTargetEnum $target, string $file, bool $overwrite = true, bool $gitIgnore = false): void
+    public function copy(CopyTargetEnum $target, string $file, bool $overwrite = true, bool $gitIgnore = false, bool $createTargetDirectory = false): void
     {
         try {
             echo '    - Removing ' . $file . ' from ' . $target->value . '' . PHP_EOL;

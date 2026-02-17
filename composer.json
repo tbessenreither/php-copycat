@@ -1,5 +1,5 @@
 {
-    "name": "tbessenreither/php-copycat",
+    "name": "tbessenreither/copycat",
     "description": "tool for copying files and directories from bundles to your project",
     "license": "MIT",
     "authors": [
@@ -13,12 +13,12 @@
     "require-dev": {},
     "autoload": {
         "psr-4": {
-            "Tbessenreither\\PhpCopycat\\": "src/"
+            "Tbessenreither\\Copycat\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tbessenreither\\PhpCopycat\\Tests\\": "tests/"
+            "Tbessenreither\\Copycat\\Tests\\": "tests/"
         }
     },
     "scripts": {},

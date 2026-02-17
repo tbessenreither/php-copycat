@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat\Service;
+namespace Tbessenreither\Copycat\Service;
 
 use RuntimeException;
-use Tbessenreither\PhpCopycat\Dto\PackageInfo;
-use Tbessenreither\PhpCopycat\Enum\KnownSystemsEnum;
+use Tbessenreither\Copycat\Dto\PackageInfo;
+use Tbessenreither\Copycat\Enum\KnownSystemsEnum;
 
 
 class SystemValidator

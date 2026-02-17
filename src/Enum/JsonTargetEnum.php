@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Tbessenreither\PhpCopycat\Enum;
+namespace Tbessenreither\Copycat\Enum;
 
 
 enum JsonTargetEnum: string
