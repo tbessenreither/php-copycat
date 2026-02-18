@@ -1,0 +1,29 @@
+{
+	"key1": "value1",
+	"key2": "value2",
+	"key3": "value3",
+	"array1": [
+		"value4",
+		"value5",
+		"value6"
+	],
+	"object1": {
+		"key4": "value7",
+		"key5": "value8",
+		"key6": "value9"
+	},
+	"emptyArray": [],
+	"emptyObject": {},
+	"nested": {
+		"array2": [
+			"value10",
+			"value11",
+			"value12"
+		],
+		"object2": {
+			"key7": "value13",
+			"key8": "value14",
+			"key9": "value15"
+		}
+	}
+}
