@@ -32,6 +32,16 @@ PHP Copycat is actively developed. Planned features include:
 - Support for modifying yaml configuration files
 - Echo of messages after execution (e.g., "Package [Packagename]: To use this package, do X, Y, Z...")
 
+### Operation support matrix
+
+Legend: ✅ supported, 🔨 working on it, 🔴 not supported
+
+|            | copy | jsonAdd | gitIgnoreAdd | symfonyBundleAdd | symfonyServiceYaml | envAdd |
+|------------|------|---------|--------------|------------------|--------------------|--------|
+| Write      | ✅   | ✅      | ✅           | ✅               | ✅                 | ✅     |
+| Revert     | ✅   | ✅      | ✅           | ✅               | 🔨                 | ✅     |
+
+
 ---
 
 ## Setup
@@ -176,6 +186,7 @@ Table of operations
 - [jsonAdd](#jsonadd)
 - [gitIgnoreAdd](#gitignoreadd)
 - [symfonyBundleAdd](#symfonybundleadd)
+- [symfonyAddServiceToYaml](#symfonyaddservicetoyaml)
 - [envAdd](#envadd)
 
 ### copy
@@ -241,6 +252,20 @@ Register a Symfony bundle automatically in `config/bundles.php`. The operation w
 ```php
 $copycat->symfonyBundleAdd(
     bundleClassName: Tbessenreither\MyPackage\MyPackageBundle::class,
+);
+```
+
+### symfonyAddServiceToYaml
+
+Register a Symfony service automatically in `config/services.yaml`. The operation will only be executed if the project is a Symfony app. This methods checks if the service is already registered to prevent duplicate entries in `services.yaml`. If the service is already registered or other problems occur, the method will refuse to add the service and print the error in the console output.
+
+```php
+$copycat->symfonyAddServiceToYaml(
+    serviceClassName: Tbessenreither\MyPackage\MyPackageService::class,
+    arguments: [ # Optional array of arguments to be passed to the service. This can be used to automatically wire services with their dependencies.
+        '$argument1' => 'value1',
+        '$argument2' => 'value2',
+    ],
 );
 ```
 
