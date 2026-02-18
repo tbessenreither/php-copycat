@@ -57,6 +57,36 @@ class JsonModifier
         return $fileContentModified;
     }
 
+    public static function remove(string $fileContent, string $path): string
+    {
+        $jsonData = json_decode($fileContent, true);
+
+        $keys = explode('.', $path);
+        $lastKey = array_pop($keys);
+
+        $current = &$jsonData;
+        foreach ($keys as $key) {
+            if (is_array($current) && array_key_exists($key, $current)) {
+                $current = &$current[$key];
+                continue;
+            } else {
+                throw new RuntimeException('No entry found at path "' . $path . '", skipping.');
+            }
+        }
+
+        // we are at the target path, remove it
+        if (!is_array($current) || !array_key_exists($lastKey, $current)) {
+            throw new RuntimeException('No entry found at path "' . $path . '", skipping.');
+        }
+
+        echo "        Removing entry at path " . $path . "." . PHP_EOL;
+        unset($current[$lastKey]);
+
+        $fileContentModified = json_encode($jsonData, JSON_PRETTY_PRINT + JSON_UNESCAPED_SLASHES);
+
+        return $fileContentModified;
+    }
+
     public static function securityChecks(JsonTargetEnum $target, string $path): void
     {
         $allowedPaths = $target->allowedPaths();

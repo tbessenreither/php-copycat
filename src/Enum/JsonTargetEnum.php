@@ -27,4 +27,12 @@ enum JsonTargetEnum: string
         };
     }
 
+    public function canRemoveValues(): bool
+    {
+        return match ($this) {
+            self::COMPOSER_JSON => true,
+            default             => false,
+        };
+    }
+
 }

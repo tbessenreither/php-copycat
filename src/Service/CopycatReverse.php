@@ -55,12 +55,13 @@ class CopycatReverse extends CopycatBase implements CopycatInterface
                 file: $target->value,
             );
 
-            throw new RuntimeException('jsonAdd reversal is not implemented in CopycatReverse.');
+            if (!$target->canRemoveValues()) {
+                throw new RuntimeException('Removing values from ' . $target->value . ' is not allowed.');
+            }
 
-            $jsonModified = JsonModifier::add(
+            $jsonModified = JsonModifier::remove(
                 fileContent: FileResolver::loadFile($file),
                 path: $path,
-                value: $value,
             );
 
             FileResolver::storeFileModification($file, $jsonModified);
